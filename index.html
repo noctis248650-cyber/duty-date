@@ -510,7 +510,24 @@
     </div>
 
     <div class="bm-section" style="border:1.5px solid var(--pink); background:var(--pink-light)">
-      <div class="bm-title">⭐ 북마크릿으로 가져오기 (가장 확실)</div>
+      <div class="bm-title">⭐ 텍스트 붙여넣기로 가져오기 (가장 쉬움)</div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">마이듀티 공유 페이지에서 일정표 부분(N, D, OFF 등이 보이는 곳)을 <strong>길게 눌러 모두 선택 → 복사</strong></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">아래 칸에 <strong>붙여넣기</strong> 후 가져오기 버튼<br>
+          <textarea class="url-input" id="paste-text" rows="3" placeholder="예: 2026년 5월&#10;N OFF OFF OFF OFF OFF D D D D OFF..." style="font-family:monospace; resize:vertical; min-height:60px"></textarea>
+          <button class="url-fetch-btn" onclick="parseAndImport()">텍스트로 가져오기</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="bm-section">
+      <div class="bm-title">💻 PC 북마크릿으로 가져오기</div>
       <div class="step">
         <div class="step-num">1</div>
         <div class="step-text"><strong>PC:</strong> 아래 버튼을 브라우저 북마크 바로 <strong>드래그</strong>해서 저장<br>
@@ -1057,6 +1074,42 @@ function buildBookmarklet() {
     + `})();`;
   bookmarkletCode = 'javascript:' + js;
   document.getElementById('bm-link').href = bookmarkletCode;
+}
+
+function parseAndImport() {
+  const text = document.getElementById('paste-text').value;
+  if (!text.trim()) { toast('붙여넣기 칸이 비어있어요'); return; }
+
+  // 연/월 추출
+  const ymMatch = text.match(/(\d{4})\s*년?\s*[.\-\/]?\s*(\d{1,2})\s*월/);
+  let year, month;
+  if (ymMatch) {
+    year = parseInt(ymMatch[1]);
+    month = parseInt(ymMatch[2]);
+  } else {
+    year = cy; month = cm;
+  }
+
+  // 코드 토큰 추출 (D, N, E, OFF 순서대로 등장하는 모든 토큰)
+  const tokens = text.match(/\b(OFF|D|N|E)\b/gi);
+  if (!tokens || tokens.length === 0) {
+    toast('근무 코드(D/N/E/OFF)를 찾을 수 없어요');
+    return;
+  }
+
+  const dim = new Date(year, month, 0).getDate();
+  const sched = tokens.slice(0, dim).map(t => t.toUpperCase());
+
+  if (sched.length < dim * 0.5) {
+    toast(`코드가 ${sched.length}개만 잡혔어요. 한 달치 다 복사됐는지 확인해주세요`);
+    return;
+  }
+
+  saveMonthUser(year, month, importUser, sched);
+  cy = year; cm = month;
+  closeImport();
+  render();
+  toast(`${NAMES[importUser]}의 ${year}년 ${month}월 일정 ${sched.length}일치 저장 💕`);
 }
 
 async function copyBookmarklet() {
