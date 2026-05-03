@@ -509,13 +509,39 @@
       </div>
     </div>
 
-    <div class="import-option" onclick="toggleUrlInput()">
-      <div class="import-option-title">🔗 마이듀티 URL로 가져오기</div>
-      <div class="import-option-desc">공유 링크를 붙여넣으면 자동으로 불러와요</div>
-    </div>
-    <div id="url-input-section" class="url-input-wrap" style="display:none">
-      <input class="url-input" id="url-input" type="url" placeholder="https://myduty.io/s/…">
-      <button class="url-fetch-btn" id="fetch-btn" onclick="fetchFromUrl()">가져오기</button>
+    <div class="bm-section" style="border:1.5px solid var(--pink); background:var(--pink-light)">
+      <div class="bm-title">⭐ 북마크릿으로 가져오기 (가장 확실)</div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text"><strong>PC:</strong> 아래 버튼을 브라우저 북마크 바로 <strong>드래그</strong>해서 저장<br>
+          <a class="bm-link" id="bm-link" href="#">📅 듀티 가져오기</a>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text"><strong>모바일:</strong> 아래 버튼으로 코드 복사 → 모바일 북마크릿 설정 가이드 참고<br>
+          <button class="bm-link" id="bm-copy-btn" onclick="copyBookmarklet()" style="border:none; cursor:pointer">📋 북마크릿 코드 복사</button>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">마이듀티 공유 링크 열고 → 위에서 누구 일정인지 선택 → 저장한 북마크 탭 → 자동 저장 🎉</div>
+      </div>
+      <details style="margin-top:8px">
+        <summary style="font-size:12px; color:var(--gray); cursor:pointer">📱 모바일 북마크릿 설정 자세히 보기</summary>
+        <div style="margin-top:8px; font-size:12px; line-height:1.7; color:var(--text)">
+          <strong>iOS Safari:</strong><br>
+          1. 위 "코드 복사" 버튼 눌러 코드 복사<br>
+          2. Safari에서 아무 페이지 → 공유 → 즐겨찾기에 추가<br>
+          3. 즐겨찾기 편집 → 방금 추가한 항목 → URL을 복사한 코드로 교체<br>
+          4. 마이듀티 공유 페이지 열기 → 주소창에 "듀티" 입력 → 즐겨찾기 탭<br><br>
+          <strong>Android Chrome:</strong><br>
+          1. 위 "코드 복사" 버튼 눌러 코드 복사<br>
+          2. 아무 페이지나 북마크 추가 (★ 아이콘)<br>
+          3. 북마크 편집 → URL을 복사한 코드로 교체 → 이름 "듀티 가져오기"<br>
+          4. 마이듀티 페이지에서 주소창에 "듀티" 입력 → 자동완성 탭
+        </div>
+      </details>
     </div>
 
     <div class="divider"></div>
@@ -527,18 +553,13 @@
 
     <div class="divider"></div>
 
-    <div class="bm-section">
-      <div class="bm-title">💻 PC에서 북마크릿으로 가져오기</div>
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-text">아래 버튼을 브라우저 북마크 바로 <strong>드래그</strong>해서 저장해요<br>
-          <a class="bm-link" id="bm-link" href="#">📅 듀티 가져오기</a>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-text">위에서 누구 일정인지 먼저 선택한 다음, 마이듀티 공유 링크를 열고 북마크를 클릭해요</div>
-      </div>
+    <div class="import-option" onclick="toggleUrlInput()">
+      <div class="import-option-title">🔗 마이듀티 URL로 가져오기 <span style="font-size:11px; color:var(--gray); font-weight:500">(불안정)</span></div>
+      <div class="import-option-desc">마이듀티 보안 정책으로 자주 실패해요 — 안 되면 위 북마크릿을 써주세요</div>
+    </div>
+    <div id="url-input-section" class="url-input-wrap" style="display:none">
+      <input class="url-input" id="url-input" type="url" placeholder="https://myduty.io/s/…">
+      <button class="url-fetch-btn" id="fetch-btn" onclick="fetchFromUrl()">가져오기</button>
     </div>
 
     <button class="modal-close" onclick="closeImport()">닫기</button>
@@ -1021,6 +1042,7 @@ function applyImport(year, month, sched) {
 }
 
 // ── Bookmarklet builder ───────────────────────────────────────────────────
+let bookmarkletCode = '';
 function buildBookmarklet() {
   const appUrl = (location.origin + location.pathname).replace(/\/+$/, '');
   const js = `(function(){`
@@ -1028,11 +1050,30 @@ function buildBookmarklet() {
     + `if(!y){alert('연월을 찾을 수 없어요. 마이듀티 공유 페이지인지 확인해주세요.');return;}`
     + `var m=y.textContent.match(/(\\d{4})년\\s*(\\d+)월/);`
     + `if(!m){alert('날짜 파싱 실패');return;}`
-    + `var b=[...document.querySelectorAll('.shift-badge')].map(function(e){return e.textContent.trim();});`
+    + `var dim=new Date(parseInt(m[1]),parseInt(m[2]),0).getDate();`
+    + `var b=[...document.querySelectorAll('.shift-badge')].slice(0,dim).map(function(e){return e.textContent.trim();});`
     + `if(!b.length){alert('근무 데이터를 찾을 수 없어요.');return;}`
     + `location.href='${appUrl}/#import='+encodeURIComponent(JSON.stringify({year:m[1],month:m[2],schedule:b}));`
     + `})();`;
-  document.getElementById('bm-link').href = 'javascript:' + js;
+  bookmarkletCode = 'javascript:' + js;
+  document.getElementById('bm-link').href = bookmarkletCode;
+}
+
+async function copyBookmarklet() {
+  if (!bookmarkletCode) buildBookmarklet();
+  try {
+    await navigator.clipboard.writeText(bookmarkletCode);
+    toast('북마크릿 코드를 복사했어요 📋');
+  } catch(e) {
+    // fallback for browsers without clipboard API
+    const ta = document.createElement('textarea');
+    ta.value = bookmarkletCode;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); toast('북마크릿 코드를 복사했어요 📋'); }
+    catch(_) { toast('복사 실패 — 직접 선택해서 복사해주세요'); }
+    document.body.removeChild(ta);
+  }
 }
 
 // ── Manual entry ──────────────────────────────────────────────────────────
