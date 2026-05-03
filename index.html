@@ -785,7 +785,8 @@ function saveMonthUser(y, m, user, sched) {
 
 // ── Firebase realtime sync ────────────────────────────────────────────────
 const FB_KEY = 'fb-url';
-let FB_URL = (localStorage.getItem(FB_KEY) || '').replace(/\/+$/, '');
+const FB_DEFAULT_URL = 'https://duty-date-default-rtdb.asia-southeast1.firebasedatabase.app';
+let FB_URL = (localStorage.getItem(FB_KEY) || FB_DEFAULT_URL).replace(/\/+$/, '');
 let fbES = null;
 let fbApplyingRemote = false;
 
