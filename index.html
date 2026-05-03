@@ -474,6 +474,25 @@
       font-family: inherit;
     }
 
+    /* ── Firebase status banner ─────────────────────── */
+    .fb-banner {
+      padding: 6px 16px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .fb-banner.warn { background: #FFF3E0; color: #E65100; border-bottom: 1px solid #FFCC80; }
+    .fb-banner.ok   { background: #E8F5E9; color: #2E7D32; border-bottom: 1px solid #A5D6A7; }
+    .fb-status {
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .fb-status.connected    { background: #E8F5E9; color: #2E7D32; }
+    .fb-status.disconnected { background: #FFEBEE; color: #C62828; }
+
     /* ── Toast ──────────────────────────────────────── */
     .toast {
       position: fixed;
@@ -499,8 +518,12 @@
 
 <div class="header">
   <h1>유진♥혁의 데이트 달력</h1>
-  <button class="header-btn" onclick="openImport()">일정 가져오기</button>
+  <div style="display:flex; gap:6px">
+    <button class="header-btn" onclick="openSettings()" title="동기화 설정" style="padding:6px 10px">⚙️</button>
+    <button class="header-btn" onclick="openImport()">일정 가져오기</button>
+  </div>
 </div>
+<div id="fb-banner" class="fb-banner" style="display:none"></div>
 
 <div id="dday-banner" class="dday-banner" style="display:none"></div>
 
@@ -616,6 +639,43 @@
   </div>
 </div>
 
+<!-- ── Settings (Firebase Sync) Modal ─────────────────── -->
+<div class="modal-bg" id="settings-modal" onclick="if(event.target===this)closeSettings()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">⚙️ 클라우드 동기화 설정</div>
+
+    <div id="fb-status" class="fb-status disconnected">⚠️ 미설정</div>
+
+    <div style="background:var(--bg); padding:12px; border-radius:12px; margin-bottom:10px">
+      <label style="font-size:13px; font-weight:700; display:block; margin-bottom:6px">Firebase Realtime Database URL</label>
+      <input class="url-input" id="fb-url-input" type="url" placeholder="https://your-project-default-rtdb.firebaseio.com" style="margin-bottom:8px">
+      <div style="display:flex; gap:6px">
+        <button class="url-fetch-btn" onclick="saveFirebaseUrl()" style="flex:1">연결</button>
+        <button onclick="disconnectFirebase()" style="flex:1; padding:12px; background:#FFE4EC; color:var(--pink); border:none; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit">연결 해제</button>
+      </div>
+    </div>
+
+    <details style="background:var(--bg); padding:12px; border-radius:12px;">
+      <summary style="font-size:13px; color:var(--pink); cursor:pointer; font-weight:700">📖 Firebase 무료 설정 가이드 (5분)</summary>
+      <div style="font-size:12.5px; line-height:1.8; margin-top:10px; color:var(--text)">
+        <strong>1.</strong> <a href="https://console.firebase.google.com" target="_blank" style="color:var(--pink); text-decoration:underline">console.firebase.google.com</a> 접속 (Google 로그인)<br>
+        <strong>2.</strong> <strong>"프로젝트 추가"</strong> → 이름 입력 (예: duty-date) → Analytics 비활성화 → 만들기<br>
+        <strong>3.</strong> 좌측 메뉴 <strong>"빌드 → Realtime Database"</strong> → "데이터베이스 만들기"<br>
+        <strong>4.</strong> 위치: <strong>asia-southeast1</strong> 선택 (한국 가까움)<br>
+        <strong>5.</strong> 보안 규칙: <strong>"테스트 모드에서 시작"</strong> 선택<br>
+        <strong>6.</strong> 데이터베이스 페이지 상단 <strong>URL 복사</strong> (https://...firebaseio.com 또는 https://...firebasedatabase.app)<br>
+        <strong>7.</strong> 위 입력칸에 붙여넣고 <strong>"연결"</strong> 버튼<br>
+        <strong>8.</strong> 같은 URL을 여자친구분 폰에서도 동일하게 입력 → 자동 동기화 시작! 💕<br><br>
+        <em>⚠️ 이 URL을 외부에 공개하지 마세요. 아는 사람만 데이터를 볼 수 있어요.</em><br>
+        <em>⚠️ 테스트 모드는 30일 후 만료. 만료 전 보안 규칙 갱신 필요 (안내 따로 드림).</em>
+      </div>
+    </details>
+
+    <button class="modal-close" onclick="closeSettings()">닫기</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -720,6 +780,158 @@ function saveMonthUser(y, m, user, sched) {
   cur[user] = sched;
   all[k] = cur;
   saveAll(all);
+  fbWriteDuty(k, user, sched);
+}
+
+// ── Firebase realtime sync ────────────────────────────────────────────────
+const FB_KEY = 'fb-url';
+let FB_URL = (localStorage.getItem(FB_KEY) || '').replace(/\/+$/, '');
+let fbES = null;
+let fbApplyingRemote = false;
+
+function fbConfigured() { return !!FB_URL; }
+
+function fbWriteDuty(ym, user, sched) {
+  if (!fbConfigured() || fbApplyingRemote) return;
+  fetch(`${FB_URL}/data/duty/${ym}/${user}.json`, {
+    method: 'PUT', body: JSON.stringify(sched)
+  }).catch(e => console.error('FB duty write:', e));
+}
+
+function fbWriteNote(date, user, text) {
+  if (!fbConfigured() || fbApplyingRemote) return;
+  const url = `${FB_URL}/data/notes/${date}/${user}.json`;
+  if (text) fetch(url, { method: 'PUT', body: JSON.stringify(text) }).catch(e => console.error('FB note write:', e));
+  else     fetch(url, { method: 'DELETE' }).catch(e => console.error('FB note delete:', e));
+}
+
+function fbStartSync() {
+  if (!fbConfigured() || !window.EventSource) return;
+  if (fbES) { fbES.close(); fbES = null; }
+  fbES = new EventSource(`${FB_URL}/data.json`);
+  fbES.addEventListener('put',   handleFbEvent);
+  fbES.addEventListener('patch', handleFbEvent);
+  fbES.addEventListener('open',  () => { updateFbBanner('ok'); updateFbStatus(true); });
+  fbES.addEventListener('error', () => { updateFbBanner('warn'); updateFbStatus(false); });
+}
+
+function handleFbEvent(e) {
+  try {
+    const { path, data } = JSON.parse(e.data);
+    fbApplyingRemote = true;
+    applyRemoteChange(path, data);
+  } catch(err) { console.error('FB event:', err); }
+  finally { fbApplyingRemote = false; }
+}
+
+function applyRemoteChange(path, data) {
+  const parts = path.split('/').filter(Boolean);
+  if (parts.length === 0) {
+    saveAll((data && data.duty) || {});
+    saveNotes((data && data.notes) || {});
+  } else if (parts[0] === 'duty') {
+    const all = loadAll();
+    if (parts.length === 1) saveAll(data || {});
+    else if (parts.length === 2) {
+      if (data) all[parts[1]] = data; else delete all[parts[1]];
+      saveAll(all);
+    } else if (parts.length === 3) {
+      if (!all[parts[1]]) all[parts[1]] = { yujin: [], hyuk: [] };
+      all[parts[1]][parts[2]] = data || [];
+      saveAll(all);
+    }
+  } else if (parts[0] === 'notes') {
+    const all = loadNotes();
+    if (parts.length === 1) saveNotes(data || {});
+    else if (parts.length === 2) {
+      if (data) all[parts[1]] = data; else delete all[parts[1]];
+      saveNotes(all);
+    } else if (parts.length === 3) {
+      if (!all[parts[1]]) all[parts[1]] = { yujin: '', hyuk: '' };
+      all[parts[1]][parts[2]] = data || '';
+      saveNotes(all);
+    }
+  }
+  render();
+}
+
+function updateFbBanner(state) {
+  const banner = document.getElementById('fb-banner');
+  if (!banner) return;
+  if (!fbConfigured()) {
+    banner.textContent = '⚠️ 클라우드 동기화 미설정 - 데이터가 이 기기에만 저장됩니다 (⚙️ 설정 필요)';
+    banner.className = 'fb-banner warn';
+    banner.style.display = 'block';
+    banner.style.cursor = 'pointer';
+    banner.onclick = openSettings;
+  } else if (state === 'ok') {
+    banner.style.display = 'none';
+  } else {
+    banner.textContent = '🔄 동기화 시도 중...';
+    banner.className = 'fb-banner warn';
+    banner.style.display = 'block';
+  }
+}
+
+function updateFbStatus(connected) {
+  const el = document.getElementById('fb-status');
+  if (!el) return;
+  if (!fbConfigured()) {
+    el.textContent = '⚠️ 미설정 - 데이터가 이 기기에만 저장돼요';
+    el.className = 'fb-status disconnected';
+  } else if (connected) {
+    el.textContent = '✅ 클라우드 동기화 연결됨';
+    el.className = 'fb-status connected';
+  } else {
+    el.textContent = '🔄 연결 시도 중...';
+    el.className = 'fb-status disconnected';
+  }
+}
+
+function openSettings() {
+  document.getElementById('fb-url-input').value = FB_URL || '';
+  updateFbStatus(!!fbES && fbES.readyState === 1);
+  document.getElementById('settings-modal').classList.add('open');
+}
+function closeSettings() { document.getElementById('settings-modal').classList.remove('open'); }
+
+async function saveFirebaseUrl() {
+  let url = document.getElementById('fb-url-input').value.trim().replace(/\/+$/, '');
+  if (!url) { toast('URL을 입력해주세요'); return; }
+  if (!/^https:\/\/.+(firebaseio\.com|firebasedatabase\.app)$/.test(url)) {
+    toast('Firebase URL 형식이 아니에요 (https://...firebaseio.com)'); return;
+  }
+
+  // Test + push local data if remote empty
+  try {
+    const res = await fetch(`${url}/data.json`);
+    if (!res.ok) throw new Error('connect fail');
+    const remote = await res.json();
+    if (!remote || (!remote.duty && !remote.notes)) {
+      const localDuty = loadAll();
+      const localNotes = loadNotes();
+      if (Object.keys(localDuty).length || Object.keys(localNotes).length) {
+        await fetch(`${url}/data.json`, { method: 'PUT', body: JSON.stringify({ duty: localDuty, notes: localNotes }) });
+      }
+    }
+  } catch(e) { toast('연결 실패 — URL 확인하세요'); return; }
+
+  FB_URL = url;
+  localStorage.setItem(FB_KEY, url);
+  fbStartSync();
+  updateFbBanner('ok');
+  updateFbStatus(true);
+  toast('클라우드 동기화 연결됨 ✨');
+  closeSettings();
+}
+
+function disconnectFirebase() {
+  if (fbES) { fbES.close(); fbES = null; }
+  FB_URL = '';
+  localStorage.removeItem(FB_KEY);
+  updateFbStatus(false);
+  updateFbBanner('warn');
+  toast('연결 해제됨');
 }
 
 // ── Notes storage (per-user) ──────────────────────────────────────────────
@@ -747,6 +959,7 @@ function setNote(date, user, text) {
   if (!cur.yujin && !cur.hyuk) delete all[date];
   else all[date] = cur;
   saveNotes(all);
+  fbWriteNote(date, user, cur[user]);
 }
 
 // migrate v1 notes (string per date) → v2 (per-user)
@@ -1264,6 +1477,8 @@ function toast(msg, dur = 2800) {
 // ── Init ──────────────────────────────────────────────────────────────────
 render();
 checkHash();
+updateFbBanner(fbConfigured() ? null : 'warn');
+if (fbConfigured()) fbStartSync();
 </script>
 </body>
 </html>
