@@ -27,30 +27,48 @@
       min-height: 100dvh;
     }
 
-    /* ── Header ─────────────────────────────────────── */
+    /* ── Header (hero) ──────────────────────────────── */
     .header {
-      background: var(--pink);
+      background:
+        linear-gradient(180deg, rgba(255,107,138,0.25) 0%, rgba(255,107,138,0.55) 60%, rgba(255,245,247,1) 100%),
+        url('img/BG.jpg') center 22% / cover no-repeat;
+      background-color: var(--pink);
       color: white;
-      padding: 14px 16px;
+      padding: 14px 16px 18px;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(255,107,138,0.2);
+    }
+    .header-top {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      box-shadow: 0 2px 8px rgba(255,107,138,0.3);
+      justify-content: flex-end;
+      gap: 6px;
     }
-    .header h1 { font-size: 17px; font-weight: 700; }
+    .header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+      text-align: center;
+      color: var(--pink);
+      align-self: center;
+    }
     .header-btn {
-      background: rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.65);
       border: none;
-      color: white;
+      color: var(--pink);
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
       padding: 6px 14px;
       border-radius: 20px;
       cursor: pointer;
       font-family: inherit;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
     /* ── D-Day banner ───────────────────────────────── */
@@ -517,11 +535,11 @@
 <body>
 
 <div class="header">
-  <h1>유진♥혁의 데이트 달력</h1>
-  <div style="display:flex; gap:6px">
+  <div class="header-top">
     <button class="header-btn" onclick="openSettings()" title="동기화 설정" style="padding:6px 10px">⚙️</button>
     <button class="header-btn" onclick="openImport()">일정 가져오기</button>
   </div>
+  <h1>유진♥혁의 데이트 달력</h1>
 </div>
 <div id="fb-banner" class="fb-banner" style="display:none"></div>
 
