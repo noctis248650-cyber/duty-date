@@ -17,6 +17,7 @@
       --N-bg: #9FA8DA; --N-text: #1A237E;
       --E-bg: #CE93D8; --E-text: #4A148C;
       --OFF-bg: #FFE4EC; --OFF-text: #C62828;
+      --together: #FFD8E0;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body {
@@ -68,7 +69,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 14px 16px 6px;
+      padding: 14px 16px 10px;
     }
     .nav-btn {
       width: 36px; height: 36px;
@@ -83,18 +84,8 @@
     }
     .month-title { font-size: 19px; font-weight: 700; }
 
-    /* ── Legend ─────────────────────────────────────── */
-    .legend {
-      display: flex;
-      gap: 10px;
-      padding: 2px 16px 10px;
-      flex-wrap: wrap;
-    }
-    .legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--gray); }
-    .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
-
     /* ── Calendar ───────────────────────────────────── */
-    .cal-wrap { padding: 0 10px; }
+    .cal-wrap { padding: 0 8px; }
     .weekdays {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -102,7 +93,6 @@
       font-size: 11px;
       color: var(--gray);
       margin-bottom: 5px;
-      padding: 0 1px;
     }
     .weekdays .sun { color: var(--pink); }
     .weekdays .sat { color: #5C6BC0; }
@@ -110,40 +100,56 @@
     .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
 
     .day {
-      aspect-ratio: 1;
+      min-height: 68px;
       background: var(--white);
-      border-radius: 10px;
+      border-radius: 9px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      padding: 4px 2px 5px;
+      gap: 2px;
       border: 1.5px solid transparent;
-      cursor: default;
       user-select: none;
     }
     .day.empty { background: transparent; border: none; }
     .day.today { border-color: var(--pink); box-shadow: 0 0 0 1px var(--pink); }
-    .day.off-day { background: var(--OFF-bg); }
+    .day.off-day { background: var(--together); }
     .day.sun .day-n { color: var(--pink); }
     .day.sat .day-n { color: #5C6BC0; }
 
-    .day-n { font-size: 13px; font-weight: 500; line-height: 1.1; }
-    .day-badge {
-      font-size: 8.5px;
-      font-weight: 700;
-      padding: 1.5px 4px;
-      border-radius: 3px;
-      margin-top: 2px;
+    .day-n { font-size: 12px; font-weight: 600; line-height: 1; margin-bottom: 1px; }
+    .day-row {
+      display: grid;
+      grid-template-columns: 22px 1fr;
+      align-items: center;
+      gap: 2px;
+      width: 100%;
+      padding: 0 2px;
+    }
+    .day-row-name {
+      font-size: 9px;
+      text-align: right;
+      color: var(--gray);
+      font-weight: 600;
       line-height: 1.2;
     }
+    .day-row-badge {
+      font-size: 8.5px;
+      font-weight: 700;
+      padding: 1.5px 2px;
+      border-radius: 3px;
+      text-align: center;
+      line-height: 1.2;
+    }
+    .day-row-empty { font-size: 8.5px; color: #DDD; text-align: center; }
     .badge-D   { background: var(--D-bg);   color: var(--D-text); }
     .badge-N   { background: var(--N-bg);   color: var(--N-text); }
     .badge-E   { background: var(--E-bg);   color: var(--E-text); }
-    .badge-OFF { background: var(--OFF-bg); color: var(--OFF-text); border: 1px solid #ffb8c8; }
+    .badge-OFF { background: var(--OFF-bg); color: var(--OFF-text); }
 
     /* ── Together summary ───────────────────────────── */
     .together {
-      margin: 12px 10px 0;
+      margin: 14px 8px 0;
       background: var(--white);
       border-radius: 14px;
       padding: 14px;
@@ -159,22 +165,6 @@
       padding: 3px 10px;
       border-radius: 20px;
       border: 1px solid #ffb8c8;
-    }
-
-    /* ── Empty state ────────────────────────────────── */
-    .empty-state { text-align: center; padding: 52px 24px 24px; }
-    .empty-icon { font-size: 52px; margin-bottom: 14px; }
-    .empty-text { font-size: 15px; color: var(--gray); line-height: 1.7; margin-bottom: 20px; }
-    .empty-btn {
-      background: var(--pink);
-      color: white;
-      border: none;
-      padding: 12px 28px;
-      border-radius: 24px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: inherit;
     }
 
     .bottom-pad { height: 36px; }
@@ -203,7 +193,7 @@
       border-radius: 4px;
       margin: 12px auto 16px;
     }
-    .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 16px; }
+    .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 14px; }
     .modal-close {
       width: 100%;
       padding: 13px;
@@ -215,6 +205,38 @@
       cursor: pointer;
       font-family: inherit;
       margin-top: 10px;
+    }
+
+    /* ── User picker ────────────────────────────────── */
+    .user-picker {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .user-picker-label {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    .user-tabs { display: flex; gap: 6px; }
+    .user-tab {
+      flex: 1;
+      padding: 10px;
+      border: 1.5px solid #EEC0CC;
+      background: var(--white);
+      color: var(--gray);
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .user-tab.active {
+      background: var(--pink);
+      border-color: var(--pink);
+      color: white;
     }
 
     /* ── Import options ─────────────────────────────── */
@@ -393,7 +415,14 @@
     <div class="modal-handle"></div>
     <div class="modal-title">일정 가져오기</div>
 
-    <!-- URL 붙여넣기 -->
+    <div class="user-picker">
+      <div class="user-picker-label">누구 일정인가요?</div>
+      <div class="user-tabs" id="import-user-tabs">
+        <button class="user-tab active" data-user="yujin" onclick="selectImportUser('yujin')">유진</button>
+        <button class="user-tab" data-user="hyuk" onclick="selectImportUser('hyuk')">혁</button>
+      </div>
+    </div>
+
     <div class="import-option" onclick="toggleUrlInput()">
       <div class="import-option-title">🔗 마이듀티 URL로 가져오기</div>
       <div class="import-option-desc">공유 링크를 붙여넣으면 자동으로 불러와요</div>
@@ -405,7 +434,6 @@
 
     <div class="divider"></div>
 
-    <!-- 수동 입력 -->
     <div class="import-option" onclick="openManual()">
       <div class="import-option-title">✏️ 직접 입력하기</div>
       <div class="import-option-desc">날짜를 탭해서 D / N / E / OFF 를 직접 설정해요</div>
@@ -413,7 +441,6 @@
 
     <div class="divider"></div>
 
-    <!-- 북마크릿 (PC) -->
     <div class="bm-section">
       <div class="bm-title">💻 PC에서 북마크릿으로 가져오기</div>
       <div class="step">
@@ -424,11 +451,7 @@
       </div>
       <div class="step">
         <div class="step-num">2</div>
-        <div class="step-text">마이듀티 공유 링크(myduty.io/s/…)를 열고 저장한 북마크를 클릭해요</div>
-      </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-text">자동으로 이 페이지로 돌아오면서 일정이 저장돼요 🎉</div>
+        <div class="step-text">위에서 누구 일정인지 먼저 선택한 다음, 마이듀티 공유 링크를 열고 북마크를 클릭해요</div>
       </div>
     </div>
 
@@ -436,10 +459,28 @@
   </div>
 </div>
 
+<!-- ── Pending Hash Import Modal ──────────────────────── -->
+<div class="modal-bg" id="pending-modal" onclick="if(event.target===this)cancelPending()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">받은 일정 저장</div>
+    <div id="pending-info" style="font-size:14px; color:var(--text); margin-bottom:14px"></div>
+    <div class="user-tabs">
+      <button class="user-tab" onclick="savePending('yujin')">유진 일정</button>
+      <button class="user-tab" onclick="savePending('hyuk')">혁 일정</button>
+    </div>
+    <button class="modal-close" onclick="cancelPending()">취소</button>
+  </div>
+</div>
+
 <!-- ── Manual Entry Modal ─────────────────────────────── -->
 <div class="modal-bg" id="manual-modal" onclick="if(event.target===this)closeManual()">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
+    <div class="user-tabs" style="margin-bottom: 14px;">
+      <button class="user-tab active" id="manual-tab-yujin" onclick="selectManualUser('yujin')">유진</button>
+      <button class="user-tab" id="manual-tab-hyuk" onclick="selectManualUser('hyuk')">혁</button>
+    </div>
     <div class="manual-month-nav">
       <button class="manual-nav-btn" onclick="manualChangeMonth(-1)">‹</button>
       <span class="manual-month-label" id="manual-month-label"></span>
@@ -460,22 +501,59 @@
 <script>
 'use strict';
 
+const USERS = ['yujin', 'hyuk'];
+const NAMES = { yujin: '유진', hyuk: '혁' };
+
 // ── Storage ───────────────────────────────────────────────────────────────
-const SK = 'duty-cal-v1';
+const SK = 'duty-cal-v2';
 function loadAll() { try { return JSON.parse(localStorage.getItem(SK) || '{}'); } catch { return {}; } }
 function saveAll(d) { localStorage.setItem(SK, JSON.stringify(d)); }
-function loadMonth(y, m) { return loadAll()[key(y, m)] || null; }
-function saveMonth(y, m, s) { const a = loadAll(); a[key(y, m)] = s; saveAll(a); }
 function key(y, m) { return `${y}-${String(m).padStart(2, '0')}`; }
+
+function loadMonth(y, m) {
+  const data = loadAll()[key(y, m)];
+  if (!data) return { yujin: [], hyuk: [] };
+  if (Array.isArray(data)) return { yujin: data, hyuk: [] };
+  return { yujin: data.yujin || [], hyuk: data.hyuk || [] };
+}
+
+function saveMonthUser(y, m, user, sched) {
+  const all = loadAll();
+  const k = key(y, m);
+  let cur = all[k];
+  if (!cur || Array.isArray(cur)) cur = { yujin: Array.isArray(cur) ? cur : [], hyuk: [] };
+  cur[user] = sched;
+  all[k] = cur;
+  saveAll(all);
+}
+
+// Migrate v1 → v2
+(function migrate() {
+  if (localStorage.getItem(SK)) return;
+  const old = localStorage.getItem('duty-cal-v1');
+  if (!old) return;
+  try {
+    const data = JSON.parse(old);
+    const next = {};
+    for (const [k, v] of Object.entries(data)) {
+      next[k] = Array.isArray(v) ? { yujin: v, hyuk: [] } : v;
+    }
+    localStorage.setItem(SK, JSON.stringify(next));
+  } catch(e) {}
+})();
 
 // ── State ─────────────────────────────────────────────────────────────────
 const now = new Date();
 let cy = now.getFullYear(), cm = now.getMonth() + 1;
+let importUser = 'yujin';
+let manualUser = 'yujin';
+let manualY, manualM, manualData = { yujin: {}, hyuk: {} };
+let pendingImport = null;
 
 // ── Render ────────────────────────────────────────────────────────────────
 function render() {
   document.getElementById('month-title').textContent = `${cy}년 ${cm}월`;
-  const sched = loadMonth(cy, cm);
+  const data = loadMonth(cy, cm);
   const root = document.getElementById('cal-root');
   root.innerHTML = '';
 
@@ -503,45 +581,52 @@ function render() {
     const e = document.createElement('div'); e.className = 'day empty'; daysEl.appendChild(e);
   }
 
-  const offDays = [];
+  const togetherDays = [];
   for (let d = 1; d <= dim; d++) {
-    const code = ((sched && sched[d - 1]) || '').toUpperCase().trim();
+    const yc = ((data.yujin && data.yujin[d - 1]) || '').toUpperCase().trim();
+    const hc = ((data.hyuk  && data.hyuk[d - 1])  || '').toUpperCase().trim();
     const dow = (fd + d - 1) % 7;
-    const isOff = code === 'OFF';
-    if (isOff) offDays.push(d);
+    const bothOff = yc === 'OFF' && hc === 'OFF';
+    if (bothOff) togetherDays.push(d);
 
     const cell = document.createElement('div');
     cell.className = 'day' +
-      (isOff ? ' off-day' : '') +
+      (bothOff ? ' off-day' : '') +
       (d === todayD ? ' today' : '') +
       (dow === 0 ? ' sun' : '') +
       (dow === 6 ? ' sat' : '');
-    cell.innerHTML = `<span class="day-n">${d}</span>${code ? `<span class="day-badge badge-${code}">${code}</span>` : ''}`;
+
+    const yBadge = yc ? `<span class="day-row-badge badge-${yc}">${yc}</span>` : `<span class="day-row-empty">·</span>`;
+    const hBadge = hc ? `<span class="day-row-badge badge-${hc}">${hc}</span>` : `<span class="day-row-empty">·</span>`;
+    cell.innerHTML =
+      `<span class="day-n">${d}</span>` +
+      `<div class="day-row"><span class="day-row-name">유진</span>${yBadge}</div>` +
+      `<div class="day-row"><span class="day-row-name">혁</span>${hBadge}</div>`;
     daysEl.appendChild(cell);
   }
 
   calWrap.appendChild(daysEl);
   root.appendChild(calWrap);
 
-  if (offDays.length > 0) {
+  if (togetherDays.length > 0) {
     const tog = document.createElement('div');
     tog.className = 'together';
-    tog.innerHTML = `<div class="together-title">🌴 쉬는 날 · ${offDays.length}일</div>
-      <div class="together-chips">${offDays.map(d => `<span class="chip">${d}일</span>`).join('')}</div>`;
+    tog.innerHTML = `<div class="together-title">🌴 함께 쉬는 날 · ${togetherDays.length}일</div>
+      <div class="together-chips">${togetherDays.map(d => `<span class="chip">${d}일</span>`).join('')}</div>`;
     root.appendChild(tog);
   }
 
-  updateDday(offDays);
+  updateDday(togetherDays);
 }
 
-function updateDday(offDays) {
+function updateDday(togetherDays) {
   const banner = document.getElementById('dday-banner');
-  if (!offDays || offDays.length === 0) { banner.style.display = 'none'; return; }
+  if (!togetherDays || togetherDays.length === 0) { banner.style.display = 'none'; return; }
   if (cy !== now.getFullYear() || cm !== now.getMonth() + 1) { banner.style.display = 'none'; return; }
-  const next = offDays.find(d => d >= now.getDate());
+  const next = togetherDays.find(d => d >= now.getDate());
   if (!next) { banner.style.display = 'none'; return; }
   const diff = next - now.getDate();
-  banner.textContent = diff === 0 ? '🎉 오늘 쉬는 날이에요!' : `💕 다음 쉬는 날까지 D-${diff}`;
+  banner.textContent = diff === 0 ? '🎉 오늘 함께 쉬는 날!' : `💕 다음 함께 쉬는 날까지 D-${diff}`;
   banner.style.display = 'block';
 }
 
@@ -552,30 +637,61 @@ function changeMonth(d) {
   render();
 }
 
-// ── Hash import (bookmarklet callback) ────────────────────────────────────
+// ── Hash import (bookmarklet callback) → ask which user ───────────────────
 function checkHash() {
   const h = location.hash;
   if (!h.startsWith('#import=')) return;
   try {
     const data = JSON.parse(decodeURIComponent(h.slice(8)));
     if (data.year && data.month && Array.isArray(data.schedule)) {
-      const y = parseInt(data.year), m = parseInt(data.month);
-      saveMonth(y, m, data.schedule);
+      pendingImport = { y: parseInt(data.year), m: parseInt(data.month), schedule: data.schedule };
       history.replaceState(null, '', location.pathname);
-      cy = y; cm = m;
-      render();
-      toast(`${y}년 ${m}월 일정을 저장했어요 💕`);
+      document.getElementById('pending-info').textContent =
+        `${pendingImport.y}년 ${pendingImport.m}월 일정을 받았어요. 누구 일정인가요?`;
+      document.getElementById('pending-modal').classList.add('open');
     }
   } catch(e) { console.error(e); }
 }
 
-// ── URL import ────────────────────────────────────────────────────────────
+function savePending(user) {
+  if (!pendingImport) return;
+  const { y, m, schedule } = pendingImport;
+  saveMonthUser(y, m, user, schedule);
+  pendingImport = null;
+  document.getElementById('pending-modal').classList.remove('open');
+  cy = y; cm = m;
+  render();
+  toast(`${NAMES[user]}의 ${y}년 ${m}월 일정을 저장했어요 💕`);
+}
+
+function cancelPending() {
+  pendingImport = null;
+  document.getElementById('pending-modal').classList.remove('open');
+}
+
+// ── Import modal ──────────────────────────────────────────────────────────
+function openImport() {
+  buildBookmarklet();
+  document.getElementById('url-input-section').style.display = 'none';
+  document.getElementById('url-input').value = '';
+  document.getElementById('import-modal').classList.add('open');
+}
+function closeImport() { document.getElementById('import-modal').classList.remove('open'); }
+
+function selectImportUser(u) {
+  importUser = u;
+  document.querySelectorAll('#import-user-tabs .user-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.user === u);
+  });
+}
+
 function toggleUrlInput() {
   const el = document.getElementById('url-input-section');
   el.style.display = el.style.display === 'none' ? 'block' : 'none';
   if (el.style.display === 'block') setTimeout(() => document.getElementById('url-input').focus(), 100);
 }
 
+// ── URL fetch import ──────────────────────────────────────────────────────
 async function fetchFromUrl() {
   const url = document.getElementById('url-input').value.trim();
   const match = url.match(/myduty\.io\/s\/(\d+)/);
@@ -604,7 +720,6 @@ async function fetchFromUrl() {
   for (const [year, month] of months) {
     for (const variant of bodies) {
       const body = JSON.stringify({ ...variant, year, month });
-      // Direct call
       try {
         const res = await fetch('https://myduty.io/proxy/getGroupDutySchedules', {
           method: 'POST',
@@ -617,7 +732,6 @@ async function fetchFromUrl() {
         }
       } catch(_) {}
 
-      // CORS proxy fallback
       try {
         const proxy = 'https://corsproxy.io/?' + encodeURIComponent('https://myduty.io/proxy/getGroupDutySchedules');
         const res = await fetch(proxy, {
@@ -664,11 +778,11 @@ function findArrays(obj, depth = 0) {
 }
 
 function applyImport(year, month, sched) {
-  saveMonth(year, month, sched);
+  saveMonthUser(year, month, importUser, sched);
   cy = year; cm = month;
   closeImport();
   render();
-  toast(`${year}년 ${month}월 일정을 저장했어요 💕`);
+  toast(`${NAMES[importUser]}의 ${year}년 ${month}월 일정을 저장했어요 💕`);
   document.getElementById('fetch-btn').disabled = false;
   document.getElementById('fetch-btn').textContent = '가져오기';
 }
@@ -688,47 +802,48 @@ function buildBookmarklet() {
   document.getElementById('bm-link').href = 'javascript:' + js;
 }
 
-// ── Import modal ──────────────────────────────────────────────────────────
-function openImport() {
-  buildBookmarklet();
-  document.getElementById('url-input-section').style.display = 'none';
-  document.getElementById('url-input').value = '';
-  document.getElementById('import-modal').classList.add('open');
-}
-function closeImport() { document.getElementById('import-modal').classList.remove('open'); }
-
 // ── Manual entry ──────────────────────────────────────────────────────────
 const CYCLE = ['', 'D', 'N', 'E', 'OFF'];
-let mY, mM, mData = {};
 
 function openManual() {
-  mY = cy; mM = cm;
-  const ex = loadMonth(cy, cm);
-  mData = {};
-  if (ex) ex.forEach((c, i) => { if (c) mData[i + 1] = c; });
-  renderManualGrid();
+  manualY = cy; manualM = cm;
+  loadManualData();
+  manualUser = 'yujin';
+  selectManualUser('yujin');
   document.getElementById('import-modal').classList.remove('open');
   document.getElementById('manual-modal').classList.add('open');
 }
 function closeManual() { document.getElementById('manual-modal').classList.remove('open'); }
 
+function loadManualData() {
+  const ex = loadMonth(manualY, manualM);
+  manualData = { yujin: {}, hyuk: {} };
+  ex.yujin.forEach((c, i) => { if (c) manualData.yujin[i + 1] = c; });
+  ex.hyuk.forEach((c, i) => { if (c) manualData.hyuk[i + 1] = c; });
+}
+
+function selectManualUser(u) {
+  manualUser = u;
+  document.getElementById('manual-tab-yujin').classList.toggle('active', u === 'yujin');
+  document.getElementById('manual-tab-hyuk').classList.toggle('active', u === 'hyuk');
+  renderManualGrid();
+}
+
 function manualChangeMonth(d) {
-  mM += d;
-  if (mM > 12) { mM = 1; mY++; }
-  if (mM < 1)  { mM = 12; mY--; }
-  const ex = loadMonth(mY, mM);
-  mData = {};
-  if (ex) ex.forEach((c, i) => { if (c) mData[i + 1] = c; });
+  manualM += d;
+  if (manualM > 12) { manualM = 1; manualY++; }
+  if (manualM < 1)  { manualM = 12; manualY--; }
+  loadManualData();
   renderManualGrid();
 }
 
 function renderManualGrid() {
-  document.getElementById('manual-month-label').textContent = `${mY}년 ${mM}월`;
+  document.getElementById('manual-month-label').textContent = `${manualY}년 ${manualM}월 (${NAMES[manualUser]})`;
   const grid = document.getElementById('manual-grid');
   grid.innerHTML = '';
 
-  const fd = new Date(mY, mM - 1, 1).getDay();
-  const dim = new Date(mY, mM, 0).getDate();
+  const fd = new Date(manualY, manualM - 1, 1).getDay();
+  const dim = new Date(manualY, manualM, 0).getDate();
 
   for (let i = 0; i < fd; i++) {
     const e = document.createElement('div');
@@ -737,7 +852,7 @@ function renderManualGrid() {
   }
 
   for (let d = 1; d <= dim; d++) {
-    const code = mData[d] || '';
+    const code = manualData[manualUser][d] || '';
     const cell = document.createElement('div');
     cell.className = 'manual-day' + (code ? ` sel-${code}` : '');
     cell.innerHTML = `<span class="manual-day-n">${d}</span><span class="manual-day-code">${code}</span>`;
@@ -747,22 +862,24 @@ function renderManualGrid() {
 }
 
 function cycleCode(d, cell) {
-  const cur = mData[d] || '';
+  const cur = manualData[manualUser][d] || '';
   const next = CYCLE[(CYCLE.indexOf(cur) + 1) % CYCLE.length];
-  if (next) mData[d] = next; else delete mData[d];
+  if (next) manualData[manualUser][d] = next; else delete manualData[manualUser][d];
   cell.className = 'manual-day' + (next ? ` sel-${next}` : '');
   cell.querySelector('.manual-day-code').textContent = next;
 }
 
 function saveManual() {
-  const dim = new Date(mY, mM, 0).getDate();
-  const sched = [];
-  for (let d = 1; d <= dim; d++) sched.push(mData[d] || '');
-  saveMonth(mY, mM, sched);
-  cy = mY; cm = mM;
+  const dim = new Date(manualY, manualM, 0).getDate();
+  for (const u of USERS) {
+    const sched = [];
+    for (let d = 1; d <= dim; d++) sched.push(manualData[u][d] || '');
+    saveMonthUser(manualY, manualM, u, sched);
+  }
+  cy = manualY; cm = manualM;
   closeManual();
   render();
-  toast(`${mY}년 ${mM}월 일정을 저장했어요 💕`);
+  toast(`${manualY}년 ${manualM}월 일정을 저장했어요 💕`);
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────────
@@ -776,8 +893,8 @@ function toast(msg, dur = 2800) {
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────
-checkHash();
 render();
+checkHash();
 </script>
 </body>
 </html>
