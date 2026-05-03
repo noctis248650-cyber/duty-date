@@ -174,6 +174,7 @@
     .day.empty { background: transparent; border: none; }
     .day.today { border-color: var(--pink); box-shadow: 0 0 0 1px var(--pink); }
     .day.off-day { background: var(--together); }
+    .day.off-day-recovery { background: #FFEEF3; }
     .day.date-day {
       background: linear-gradient(135deg, #FFC8D6 0%, #FF9AB1 100%);
       border-color: var(--pink);
@@ -1124,11 +1125,26 @@ function render() {
 
   const notes = loadNotes();
   const dateFlags = loadDateFlags();
+  // 전월 마지막 날 데이터 (1일이 N 다음날인지 체크용)
+  const prevM = cm === 1 ? 12 : cm - 1;
+  const prevY = cm === 1 ? cy - 1 : cy;
+  const prevData = loadMonth(prevY, prevM);
+  const prevDim = new Date(prevY, prevM, 0).getDate();
   const togetherDays = [];
   const dateDays = [];
   for (let d = 1; d <= dim; d++) {
     const yc = ((data.yujin && data.yujin[d - 1]) || '').toUpperCase().trim();
     const hc = ((data.hyuk  && data.hyuk[d - 1])  || '').toUpperCase().trim();
+    // 전날 N 여부
+    let prevYc, prevHc;
+    if (d > 1) {
+      prevYc = ((data.yujin && data.yujin[d - 2]) || '').toUpperCase().trim();
+      prevHc = ((data.hyuk  && data.hyuk[d - 2])  || '').toUpperCase().trim();
+    } else {
+      prevYc = ((prevData.yujin && prevData.yujin[prevDim - 1]) || '').toUpperCase().trim();
+      prevHc = ((prevData.hyuk  && prevData.hyuk[prevDim - 1])  || '').toUpperCase().trim();
+    }
+    const wasNight = prevYc === 'N' || prevHc === 'N';
     const dow = (fd + d - 1) % 7;
     const dk = dateKey(cy, cm, d);
     const holiday = HOLIDAYS[dk];
@@ -1139,9 +1155,10 @@ function render() {
     if (bothOff) togetherDays.push(d);
     if (isDate) dateDays.push(d);
 
+    const offClass = bothOff ? (wasNight ? ' off-day-recovery' : ' off-day') : '';
     const cell = document.createElement('div');
     cell.className = 'day' +
-      (isDate ? ' date-day' : (bothOff ? ' off-day' : '')) +
+      (isDate ? ' date-day' : offClass) +
       (d === todayD ? ' today' : '') +
       ((dow === 0 || holiday) ? ' sun' : '') +
       (dow === 6 ? ' sat' : '');
