@@ -367,6 +367,24 @@
       display: flex; align-items: center; justify-content: center;
     }
     .manual-hint { font-size: 11px; color: var(--gray); text-align: center; margin-bottom: 8px; }
+    .tool-palette { display: flex; gap: 4px; margin-bottom: 10px; }
+    .tool-btn {
+      flex: 1;
+      padding: 11px 4px;
+      border: 1.5px solid #EEC0CC;
+      background: var(--white);
+      color: var(--text);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .tool-btn.active.tool-D   { background: var(--D-bg);   border-color: #FFA000; color: var(--D-text); }
+    .tool-btn.active.tool-N   { background: var(--N-bg);   border-color: #3949AB; color: var(--N-text); }
+    .tool-btn.active.tool-E   { background: var(--E-bg);   border-color: #8E24AA; color: var(--E-text); }
+    .tool-btn.active.tool-OFF { background: var(--OFF-bg); border-color: var(--pink); color: var(--OFF-text); }
+    .tool-btn.active.tool-DEL { background: #424242;       border-color: #424242; color: white; }
     .manual-weekdays {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -526,57 +544,9 @@
 
     <div class="divider"></div>
 
-    <div class="bm-section">
-      <div class="bm-title">💻 PC 북마크릿으로 가져오기</div>
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-text"><strong>PC:</strong> 아래 버튼을 브라우저 북마크 바로 <strong>드래그</strong>해서 저장<br>
-          <a class="bm-link" id="bm-link" href="#">📅 듀티 가져오기</a>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-text"><strong>모바일:</strong> 아래 버튼으로 코드 복사 → 모바일 북마크릿 설정 가이드 참고<br>
-          <button class="bm-link" id="bm-copy-btn" onclick="copyBookmarklet()" style="border:none; cursor:pointer">📋 북마크릿 코드 복사</button>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-text">마이듀티 공유 링크 열고 → 위에서 누구 일정인지 선택 → 저장한 북마크 탭 → 자동 저장 🎉</div>
-      </div>
-      <details style="margin-top:8px">
-        <summary style="font-size:12px; color:var(--gray); cursor:pointer">📱 모바일 북마크릿 설정 자세히 보기</summary>
-        <div style="margin-top:8px; font-size:12px; line-height:1.7; color:var(--text)">
-          <strong>iOS Safari:</strong><br>
-          1. 위 "코드 복사" 버튼 눌러 코드 복사<br>
-          2. Safari에서 아무 페이지 → 공유 → 즐겨찾기에 추가<br>
-          3. 즐겨찾기 편집 → 방금 추가한 항목 → URL을 복사한 코드로 교체<br>
-          4. 마이듀티 공유 페이지 열기 → 주소창에 "듀티" 입력 → 즐겨찾기 탭<br><br>
-          <strong>Android Chrome:</strong><br>
-          1. 위 "코드 복사" 버튼 눌러 코드 복사<br>
-          2. 아무 페이지나 북마크 추가 (★ 아이콘)<br>
-          3. 북마크 편집 → URL을 복사한 코드로 교체 → 이름 "듀티 가져오기"<br>
-          4. 마이듀티 페이지에서 주소창에 "듀티" 입력 → 자동완성 탭
-        </div>
-      </details>
-    </div>
-
-    <div class="divider"></div>
-
     <div class="import-option" onclick="openManual()">
       <div class="import-option-title">✏️ 직접 입력하기</div>
-      <div class="import-option-desc">날짜를 탭해서 D / N / E / OFF 를 직접 설정해요</div>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="import-option" onclick="toggleUrlInput()">
-      <div class="import-option-title">🔗 마이듀티 URL로 가져오기 <span style="font-size:11px; color:var(--gray); font-weight:500">(불안정)</span></div>
-      <div class="import-option-desc">마이듀티 보안 정책으로 자주 실패해요 — 안 되면 위 북마크릿을 써주세요</div>
-    </div>
-    <div id="url-input-section" class="url-input-wrap" style="display:none">
-      <input class="url-input" id="url-input" type="url" placeholder="https://myduty.io/s/…">
-      <button class="url-fetch-btn" id="fetch-btn" onclick="fetchFromUrl()">가져오기</button>
+      <div class="import-option-desc">D / N / E / OFF 도구를 골라 날짜를 탭해서 등록해요</div>
     </div>
 
     <button class="modal-close" onclick="closeImport()">닫기</button>
@@ -610,7 +580,14 @@
       <span class="manual-month-label" id="manual-month-label"></span>
       <button class="manual-nav-btn" onclick="manualChangeMonth(1)">›</button>
     </div>
-    <div class="manual-hint">날짜를 탭할 때마다 → D → N → E → OFF → 비움 순서로 바뀌어요</div>
+    <div class="manual-hint">아래 도구를 고른 다음 날짜를 탭하면 등록돼요</div>
+    <div class="tool-palette">
+      <button class="tool-btn tool-D active"   data-tool="D"   onclick="selectTool('D')">D</button>
+      <button class="tool-btn tool-N"          data-tool="N"   onclick="selectTool('N')">N</button>
+      <button class="tool-btn tool-E"          data-tool="E"   onclick="selectTool('E')">E</button>
+      <button class="tool-btn tool-OFF"        data-tool="OFF" onclick="selectTool('OFF')">OFF</button>
+      <button class="tool-btn tool-DEL"        data-tool="DEL" onclick="selectTool('DEL')">DEL</button>
+    </div>
     <div class="manual-weekdays">
       <span style="color:var(--pink)">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span style="color:#5C6BC0">토</span>
     </div>
@@ -808,6 +785,7 @@ const now = new Date();
 let cy = now.getFullYear(), cm = now.getMonth() + 1;
 let importUser = 'yujin';
 let manualUser = 'yujin';
+let manualTool = 'D';
 let manualY, manualM, manualData = { yujin: {}, hyuk: {} };
 let pendingImport = null;
 
@@ -942,9 +920,7 @@ function cancelPending() {
 
 // ── Import modal ──────────────────────────────────────────────────────────
 function openImport() {
-  buildBookmarklet();
-  document.getElementById('url-input-section').style.display = 'none';
-  document.getElementById('url-input').value = '';
+  document.getElementById('paste-text').value = '';
   document.getElementById('import-modal').classList.add('open');
 }
 function closeImport() { document.getElementById('import-modal').classList.remove('open'); }
@@ -954,12 +930,6 @@ function selectImportUser(u) {
   document.querySelectorAll('#import-user-tabs .user-tab').forEach(t => {
     t.classList.toggle('active', t.dataset.user === u);
   });
-}
-
-function toggleUrlInput() {
-  const el = document.getElementById('url-input-section');
-  el.style.display = el.style.display === 'none' ? 'block' : 'none';
-  if (el.style.display === 'block') setTimeout(() => document.getElementById('url-input').focus(), 100);
 }
 
 // ── URL fetch import ──────────────────────────────────────────────────────
@@ -1130,15 +1100,22 @@ async function copyBookmarklet() {
 }
 
 // ── Manual entry ──────────────────────────────────────────────────────────
-const CYCLE = ['', 'D', 'N', 'E', 'OFF'];
-
 function openManual() {
   manualY = cy; manualM = cm;
   loadManualData();
   manualUser = 'yujin';
+  manualTool = 'D';
+  selectTool('D');
   selectManualUser('yujin');
   document.getElementById('import-modal').classList.remove('open');
   document.getElementById('manual-modal').classList.add('open');
+}
+
+function selectTool(t) {
+  manualTool = t;
+  document.querySelectorAll('.tool-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tool === t);
+  });
 }
 function closeManual() { document.getElementById('manual-modal').classList.remove('open'); }
 
@@ -1183,17 +1160,21 @@ function renderManualGrid() {
     const cell = document.createElement('div');
     cell.className = 'manual-day' + (code ? ` sel-${code}` : '');
     cell.innerHTML = `<span class="manual-day-n">${d}</span><span class="manual-day-code">${code}</span>`;
-    cell.onclick = () => cycleCode(d, cell);
+    cell.onclick = () => applyTool(d, cell);
     grid.appendChild(cell);
   }
 }
 
-function cycleCode(d, cell) {
-  const cur = manualData[manualUser][d] || '';
-  const next = CYCLE[(CYCLE.indexOf(cur) + 1) % CYCLE.length];
-  if (next) manualData[manualUser][d] = next; else delete manualData[manualUser][d];
-  cell.className = 'manual-day' + (next ? ` sel-${next}` : '');
-  cell.querySelector('.manual-day-code').textContent = next;
+function applyTool(d, cell) {
+  if (manualTool === 'DEL') {
+    delete manualData[manualUser][d];
+    cell.className = 'manual-day';
+    cell.querySelector('.manual-day-code').textContent = '';
+  } else {
+    manualData[manualUser][d] = manualTool;
+    cell.className = 'manual-day sel-' + manualTool;
+    cell.querySelector('.manual-day-code').textContent = manualTool;
+  }
 }
 
 function saveManual() {
