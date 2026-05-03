@@ -479,17 +479,6 @@ function render() {
   const root = document.getElementById('cal-root');
   root.innerHTML = '';
 
-  if (!sched) {
-    root.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">🗓️</div>
-        <div class="empty-text">${cy}년 ${cm}월 일정이 없어요<br>마이듀티에서 가져오거나 직접 입력해보세요</div>
-        <button class="empty-btn" onclick="openImport()">일정 가져오기</button>
-      </div>`;
-    updateDday(null);
-    return;
-  }
-
   const calWrap = document.createElement('div');
   calWrap.className = 'cal-wrap';
 
@@ -516,7 +505,7 @@ function render() {
 
   const offDays = [];
   for (let d = 1; d <= dim; d++) {
-    const code = (sched[d - 1] || '').toUpperCase().trim();
+    const code = ((sched && sched[d - 1]) || '').toUpperCase().trim();
     const dow = (fd + d - 1) % 7;
     const isOff = code === 'OFF';
     if (isOff) offDays.push(d);
