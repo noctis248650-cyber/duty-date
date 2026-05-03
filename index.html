@@ -1211,7 +1211,9 @@ function openNote(y, m, d) {
       ? `날짜에 메모를 남겨보세요<div class="note-info-holiday">🇰🇷 ${escapeHtml(holiday)}</div>`
       : '날짜에 메모를 남겨보세요 (데이트, 약속, 기념일 등)';
   noteUser = 'yujin';
-  selectNoteUser('yujin');
+  document.getElementById('note-tab-yujin').classList.add('active');
+  document.getElementById('note-tab-hyuk').classList.remove('active');
+  document.getElementById('note-text').value = noteDraft.yujin || '';
   document.getElementById('note-modal').classList.add('open');
   setTimeout(() => document.getElementById('note-text').focus(), 100);
 }
