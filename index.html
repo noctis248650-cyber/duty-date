@@ -174,6 +174,22 @@
     .day.empty { background: transparent; border: none; }
     .day.today { border-color: var(--pink); box-shadow: 0 0 0 1px var(--pink); }
     .day.off-day { background: var(--together); }
+    .day.date-day {
+      background: linear-gradient(135deg, #FFC8D6 0%, #FF9AB1 100%);
+      border-color: var(--pink);
+      border-width: 2.5px;
+      position: relative;
+    }
+    .day.date-day::after {
+      content: '💕';
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      font-size: 13px;
+      filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));
+      pointer-events: none;
+    }
+    .day.date-day .day-n { color: #C2185B !important; font-weight: 700; }
     .day.sun .day-n { color: var(--pink); }
     .day.sat .day-n { color: #5C6BC0; }
 
@@ -446,6 +462,27 @@
       margin-top: 10px;
     }
 
+    /* ── Date flag toggle ───────────────────────────── */
+    .date-toggle-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--white);
+      border: 2px solid var(--pink);
+      border-radius: 12px;
+      color: var(--pink);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      margin-bottom: 12px;
+      transition: all 0.2s;
+    }
+    .date-toggle-btn.active {
+      background: var(--pink);
+      color: white;
+      box-shadow: 0 3px 10px rgba(255,107,138,0.45);
+    }
+
     /* ── Note editor ────────────────────────────────── */
     .note-textarea {
       width: 100%;
@@ -646,6 +683,7 @@
     <div class="modal-handle"></div>
     <div class="modal-title" id="note-title">메모</div>
     <div class="note-info" id="note-info"></div>
+    <button class="date-toggle-btn" id="date-toggle" onclick="toggleDateFlag()">💕 데이트 약속</button>
     <div class="user-tabs" style="margin-bottom: 10px;">
       <button class="user-tab active" id="note-tab-yujin" onclick="selectNoteUser('yujin')">유진 메모</button>
       <button class="user-tab" id="note-tab-hyuk" onclick="selectNoteUser('hyuk')">혁 메모</button>
@@ -850,6 +888,7 @@ function applyRemoteChange(path, data) {
   if (parts.length === 0) {
     saveAll((data && data.duty) || {});
     saveNotes((data && data.notes) || {});
+    saveDateFlags((data && data.dates) || {});
   } else if (parts[0] === 'duty') {
     const all = loadAll();
     if (parts.length === 1) saveAll(data || {});
@@ -871,6 +910,13 @@ function applyRemoteChange(path, data) {
       if (!all[parts[1]]) all[parts[1]] = { yujin: '', hyuk: '' };
       all[parts[1]][parts[2]] = data || '';
       saveNotes(all);
+    }
+  } else if (parts[0] === 'dates') {
+    const all = loadDateFlags();
+    if (parts.length === 1) saveDateFlags(data || {});
+    else if (parts.length === 2) {
+      if (data) all[parts[1]] = true; else delete all[parts[1]];
+      saveDateFlags(all);
     }
   }
   render();
@@ -953,6 +999,28 @@ function disconnectFirebase() {
   updateFbStatus(false);
   updateFbBanner('warn');
   toast('연결 해제됨');
+}
+
+// ── Date flags (manual date promises) ─────────────────────────────────────
+const DSK = 'duty-dates-v1';
+function loadDateFlags() {
+  try { return JSON.parse(localStorage.getItem(DSK) || '{}'); } catch { return {}; }
+}
+function saveDateFlags(d) { localStorage.setItem(DSK, JSON.stringify(d)); }
+function isDateFlagged(date) { return !!loadDateFlags()[date]; }
+function setDateFlagLocal(date, flag) {
+  const all = loadDateFlags();
+  if (flag) all[date] = true;
+  else delete all[date];
+  saveDateFlags(all);
+}
+function setDateFlag(date, flag) {
+  setDateFlagLocal(date, flag);
+  if (fbConfigured() && !fbApplyingRemote) {
+    const url = `${FB_URL}/data/dates/${date}.json`;
+    if (flag) fetch(url, { method: 'PUT', body: 'true' }).catch(()=>{});
+    else fetch(url, { method: 'DELETE' }).catch(()=>{});
+  }
 }
 
 // ── Notes storage (per-user) ──────────────────────────────────────────────
@@ -1055,7 +1123,9 @@ function render() {
   }
 
   const notes = loadNotes();
+  const dateFlags = loadDateFlags();
   const togetherDays = [];
+  const dateDays = [];
   for (let d = 1; d <= dim; d++) {
     const yc = ((data.yujin && data.yujin[d - 1]) || '').toUpperCase().trim();
     const hc = ((data.hyuk  && data.hyuk[d - 1])  || '').toUpperCase().trim();
@@ -1065,11 +1135,13 @@ function render() {
     const noteY = notes[dk] && notes[dk].yujin;
     const noteH = notes[dk] && notes[dk].hyuk;
     const bothOff = yc === 'OFF' && hc === 'OFF';
+    const isDate = !!dateFlags[dk];
     if (bothOff) togetherDays.push(d);
+    if (isDate) dateDays.push(d);
 
     const cell = document.createElement('div');
     cell.className = 'day' +
-      (bothOff ? ' off-day' : '') +
+      (isDate ? ' date-day' : (bothOff ? ' off-day' : '')) +
       (d === todayD ? ' today' : '') +
       ((dow === 0 || holiday) ? ' sun' : '') +
       (dow === 6 ? ' sat' : '');
@@ -1091,6 +1163,14 @@ function render() {
   calWrap.appendChild(daysEl);
   root.appendChild(calWrap);
 
+  if (dateDays.length > 0) {
+    const dt = document.createElement('div');
+    dt.className = 'together';
+    dt.style.borderLeftColor = '#C2185B';
+    dt.innerHTML = `<div class="together-title" style="color:#C2185B">💕 데이트 약속 · ${dateDays.length}일</div>
+      <div class="together-chips">${dateDays.map(d => `<span class="chip" style="background:#FFC8D6; color:#C2185B; border-color:var(--pink)">${d}일</span>`).join('')}</div>`;
+    root.appendChild(dt);
+  }
   if (togetherDays.length > 0) {
     const tog = document.createElement('div');
     tog.className = 'together';
@@ -1448,8 +1528,26 @@ function openNote(y, m, d) {
   document.getElementById('note-tab-yujin').classList.add('active');
   document.getElementById('note-tab-hyuk').classList.remove('active');
   document.getElementById('note-text').value = noteDraft.yujin || '';
+  updateDateToggle();
   document.getElementById('note-modal').classList.add('open');
   setTimeout(() => document.getElementById('note-text').focus(), 100);
+}
+
+function updateDateToggle() {
+  const btn = document.getElementById('date-toggle');
+  if (!btn || !noteEditingDate) return;
+  const flagged = isDateFlagged(noteEditingDate);
+  btn.classList.toggle('active', flagged);
+  btn.textContent = flagged ? '💕 데이트 약속 ✓' : '💕 데이트 약속 등록';
+}
+
+function toggleDateFlag() {
+  if (!noteEditingDate) return;
+  const flagged = isDateFlagged(noteEditingDate);
+  setDateFlag(noteEditingDate, !flagged);
+  updateDateToggle();
+  render();
+  toast(flagged ? '데이트 약속 해제' : '💕 데이트 약속 등록!');
 }
 
 function selectNoteUser(u) {
