@@ -97,35 +97,60 @@
     .weekdays .sun { color: var(--pink); }
     .weekdays .sat { color: #5C6BC0; }
 
-    .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+    .days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      grid-auto-rows: 96px;
+      gap: 3px;
+    }
 
     .day {
-      min-height: 78px;
       background: var(--white);
       border-radius: 9px;
       display: flex;
       flex-direction: column;
       align-items: stretch;
-      padding: 4px 2px 5px;
-      gap: 2px;
+      padding: 3px 2px;
+      gap: 1px;
       border: 1.5px solid transparent;
       user-select: none;
       cursor: pointer;
+      overflow: hidden;
     }
     .day-extra {
-      font-size: 9px;
-      padding: 1.5px 3px;
+      font-size: 8.5px;
+      padding: 1px 3px;
       border-radius: 3px;
       margin: 1px 1px 0;
       text-align: center;
-      line-height: 1.25;
+      line-height: 1.3;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       font-weight: 600;
+      max-width: 100%;
+      display: block;
     }
     .holiday-chip { background: #FFCDD2; color: #C62828; }
-    .note-chip    { background: #E1F5FE; color: #01579B; font-weight: 500; }
+    .note-chip {
+      background: #E1F5FE;
+      color: #01579B;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      justify-content: flex-start;
+      padding: 1px 3px;
+    }
+    .note-chip-icon { width: 11px; height: 11px; object-fit: contain; flex-shrink: 0; }
+    .note-chip-text {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: left;
+    }
+    .day-icon { width: 14px; height: 14px; object-fit: contain; flex-shrink: 0; }
     .day.empty { background: transparent; border: none; }
     .day.today { border-color: var(--pink); box-shadow: 0 0 0 1px var(--pink); }
     .day.off-day { background: var(--together); }
@@ -135,23 +160,21 @@
     .day-n { font-size: 12px; font-weight: 600; line-height: 1; margin-bottom: 1px; text-align: center; }
     .day-row {
       display: grid;
-      grid-template-columns: 22px 1fr;
+      grid-template-columns: 16px 1fr;
       align-items: center;
       gap: 2px;
       width: 100%;
       padding: 0 2px;
     }
     .day-row-name {
-      font-size: 9px;
-      text-align: right;
-      color: var(--gray);
-      font-weight: 600;
-      line-height: 1.2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .day-row-badge {
-      font-size: 8.5px;
+      font-size: 8px;
       font-weight: 700;
-      padding: 1.5px 2px;
+      padding: 1px 2px;
       border-radius: 3px;
       text-align: center;
       line-height: 1.2;
@@ -565,9 +588,13 @@
     <div class="modal-handle"></div>
     <div class="modal-title" id="note-title">메모</div>
     <div class="note-info" id="note-info"></div>
+    <div class="user-tabs" style="margin-bottom: 10px;">
+      <button class="user-tab active" id="note-tab-yujin" onclick="selectNoteUser('yujin')">유진 메모</button>
+      <button class="user-tab" id="note-tab-hyuk" onclick="selectNoteUser('hyuk')">혁 메모</button>
+    </div>
     <textarea class="note-textarea" id="note-text" placeholder="메모를 입력하세요 (예: 데이트, 약속, 기념일 등)"></textarea>
     <div class="note-btn-row">
-      <button class="note-delete-btn" onclick="deleteNote()">삭제</button>
+      <button class="note-delete-btn" onclick="deleteNote()">이 사람 메모 삭제</button>
       <button class="note-save-btn" onclick="saveNote()">저장</button>
     </div>
     <button class="modal-close" onclick="closeNote()">취소</button>
@@ -680,16 +707,48 @@ function saveMonthUser(y, m, user, sched) {
   saveAll(all);
 }
 
-// ── Notes storage ─────────────────────────────────────────────────────────
-const NSK = 'duty-notes-v1';
-function loadNotes() { try { return JSON.parse(localStorage.getItem(NSK) || '{}'); } catch { return {}; } }
-function getNote(date) { return loadNotes()[date] || ''; }
-function setNote(date, text) {
-  const all = loadNotes();
-  if (text && text.trim()) all[date] = text.trim();
-  else delete all[date];
-  localStorage.setItem(NSK, JSON.stringify(all));
+// ── Notes storage (per-user) ──────────────────────────────────────────────
+const NSK = 'duty-notes-v2';
+function loadNotes() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(NSK) || '{}');
+    const out = {};
+    for (const [k, v] of Object.entries(raw)) {
+      if (typeof v === 'string') out[k] = { yujin: v, hyuk: '' };
+      else out[k] = { yujin: (v && v.yujin) || '', hyuk: (v && v.hyuk) || '' };
+    }
+    return out;
+  } catch { return {}; }
 }
+function saveNotes(d) { localStorage.setItem(NSK, JSON.stringify(d)); }
+function getNote(date, user) {
+  const n = loadNotes()[date];
+  return (n && n[user]) || '';
+}
+function setNote(date, user, text) {
+  const all = loadNotes();
+  const cur = all[date] || { yujin: '', hyuk: '' };
+  cur[user] = (text && text.trim()) ? text.trim() : '';
+  if (!cur.yujin && !cur.hyuk) delete all[date];
+  else all[date] = cur;
+  saveNotes(all);
+}
+
+// migrate v1 notes (string per date) → v2 (per-user)
+(function migrateNotes() {
+  if (localStorage.getItem(NSK)) return;
+  const old = localStorage.getItem('duty-notes-v1');
+  if (!old) return;
+  try {
+    const data = JSON.parse(old);
+    const next = {};
+    for (const [k, v] of Object.entries(data)) {
+      if (typeof v === 'string' && v) next[k] = { yujin: v, hyuk: '' };
+      else if (v && typeof v === 'object') next[k] = { yujin: v.yujin || '', hyuk: v.hyuk || '' };
+    }
+    localStorage.setItem(NSK, JSON.stringify(next));
+  } catch(e) {}
+})();
 
 // Migrate v1 → v2
 (function migrate() {
@@ -753,7 +812,8 @@ function render() {
     const dow = (fd + d - 1) % 7;
     const dk = dateKey(cy, cm, d);
     const holiday = HOLIDAYS[dk];
-    const note = notes[dk];
+    const noteY = notes[dk] && notes[dk].yujin;
+    const noteH = notes[dk] && notes[dk].hyuk;
     const bothOff = yc === 'OFF' && hc === 'OFF';
     if (bothOff) togetherDays.push(d);
 
@@ -769,10 +829,11 @@ function render() {
     const hBadge = hc ? `<span class="day-row-badge badge-${hc}">${hc}</span>` : `<span class="day-row-empty">·</span>`;
     let html =
       `<span class="day-n">${d}</span>` +
-      `<div class="day-row"><span class="day-row-name">유진</span>${yBadge}</div>` +
-      `<div class="day-row"><span class="day-row-name">혁</span>${hBadge}</div>`;
-    if (holiday) html += `<div class="day-extra holiday-chip" title="${holiday}">${holiday}</div>`;
-    if (note)    html += `<div class="day-extra note-chip" title="${escapeHtml(note)}">${escapeHtml(note)}</div>`;
+      `<div class="day-row"><span class="day-row-name"><img class="day-icon" src="img/yujin.svg" alt="유진"></span>${yBadge}</div>` +
+      `<div class="day-row"><span class="day-row-name"><img class="day-icon" src="img/hyuk.svg" alt="혁"></span>${hBadge}</div>`;
+    if (holiday) html += `<div class="day-extra holiday-chip" title="${escapeHtml(holiday)}">${escapeHtml(holiday)}</div>`;
+    if (noteY)   html += `<div class="day-extra note-chip" title="${escapeHtml(noteY)}"><img class="note-chip-icon" src="img/yujin.svg" alt=""><span class="note-chip-text">${escapeHtml(noteY)}</span></div>`;
+    if (noteH)   html += `<div class="day-extra note-chip" title="${escapeHtml(noteH)}"><img class="note-chip-icon" src="img/hyuk.svg" alt=""><span class="note-chip-text">${escapeHtml(noteH)}</span></div>`;
     cell.innerHTML = html;
     daysEl.appendChild(cell);
   }
@@ -1054,8 +1115,10 @@ function saveManual() {
   toast(`${manualY}년 ${manualM}월 일정을 저장했어요 💕`);
 }
 
-// ── Note editor ───────────────────────────────────────────────────────────
+// ── Note editor (per-user) ────────────────────────────────────────────────
 let noteEditingDate = null;
+let noteUser = 'yujin';
+let noteDraft = { yujin: '', hyuk: '' };
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1064,16 +1127,27 @@ function escapeHtml(s) {
 function openNote(y, m, d) {
   const dk = dateKey(y, m, d);
   noteEditingDate = dk;
+  noteDraft = { yujin: getNote(dk, 'yujin'), hyuk: getNote(dk, 'hyuk') };
   const wd = ['일','월','화','수','목','금','토'][new Date(y, m - 1, d).getDay()];
   document.getElementById('note-title').textContent = `${y}년 ${m}월 ${d}일 (${wd})`;
   const holiday = HOLIDAYS[dk];
   document.getElementById('note-info').innerHTML =
     holiday
-      ? `날짜를 길게 메모해 보세요<div class="note-info-holiday">🇰🇷 ${holiday}</div>`
+      ? `날짜에 메모를 남겨보세요<div class="note-info-holiday">🇰🇷 ${escapeHtml(holiday)}</div>`
       : '날짜에 메모를 남겨보세요 (데이트, 약속, 기념일 등)';
-  document.getElementById('note-text').value = getNote(dk);
+  noteUser = 'yujin';
+  selectNoteUser('yujin');
   document.getElementById('note-modal').classList.add('open');
   setTimeout(() => document.getElementById('note-text').focus(), 100);
+}
+
+function selectNoteUser(u) {
+  // save current textarea into draft before switching
+  noteDraft[noteUser] = document.getElementById('note-text').value;
+  noteUser = u;
+  document.getElementById('note-tab-yujin').classList.toggle('active', u === 'yujin');
+  document.getElementById('note-tab-hyuk').classList.toggle('active', u === 'hyuk');
+  document.getElementById('note-text').value = noteDraft[u] || '';
 }
 
 function closeNote() {
@@ -1083,7 +1157,9 @@ function closeNote() {
 
 function saveNote() {
   if (!noteEditingDate) return;
-  setNote(noteEditingDate, document.getElementById('note-text').value);
+  noteDraft[noteUser] = document.getElementById('note-text').value;
+  setNote(noteEditingDate, 'yujin', noteDraft.yujin);
+  setNote(noteEditingDate, 'hyuk',  noteDraft.hyuk);
   closeNote();
   render();
   toast('메모를 저장했어요 💕');
@@ -1091,10 +1167,11 @@ function saveNote() {
 
 function deleteNote() {
   if (!noteEditingDate) return;
-  setNote(noteEditingDate, '');
-  closeNote();
+  setNote(noteEditingDate, noteUser, '');
+  noteDraft[noteUser] = '';
+  document.getElementById('note-text').value = '';
   render();
-  toast('메모를 삭제했어요');
+  toast(`${NAMES[noteUser]} 메모를 삭제했어요`);
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────────
