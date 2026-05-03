@@ -850,11 +850,11 @@ function render() {
     const hBadge = hc ? `<span class="day-row-badge badge-${hc}">${hc}</span>` : `<span class="day-row-empty">·</span>`;
     let html =
       `<span class="day-n">${d}</span>` +
-      `<div class="day-row"><span class="day-row-name"><img class="day-icon" src="img/yujin.svg" alt="유진"></span>${yBadge}</div>` +
-      `<div class="day-row"><span class="day-row-name"><img class="day-icon" src="img/hyuk.svg" alt="혁"></span>${hBadge}</div>`;
+      `<div class="day-row"><span class="day-row-name"><img class="day-icon" src="img/yujin.png" alt="유진"></span>${yBadge}</div>` +
+      `<div class="day-row"><span class="day-row-name"><img class="day-icon" src="img/hyuk.png" alt="혁"></span>${hBadge}</div>`;
     if (holiday) html += `<div class="day-extra holiday-chip" title="${escapeHtml(holiday)}">${escapeHtml(holiday)}</div>`;
-    if (noteY)   html += `<div class="day-extra note-chip" title="${escapeHtml(noteY)}"><img class="note-chip-icon" src="img/yujin.svg" alt=""><span class="note-chip-text">${escapeHtml(noteY)}</span></div>`;
-    if (noteH)   html += `<div class="day-extra note-chip" title="${escapeHtml(noteH)}"><img class="note-chip-icon" src="img/hyuk.svg" alt=""><span class="note-chip-text">${escapeHtml(noteH)}</span></div>`;
+    if (noteY)   html += `<div class="day-extra note-chip" title="${escapeHtml(noteY)}"><img class="note-chip-icon" src="img/yujin.png" alt=""><span class="note-chip-text">${escapeHtml(noteY)}</span></div>`;
+    if (noteH)   html += `<div class="day-extra note-chip" title="${escapeHtml(noteH)}"><img class="note-chip-icon" src="img/hyuk.png" alt=""><span class="note-chip-text">${escapeHtml(noteH)}</span></div>`;
     cell.innerHTML = html;
     daysEl.appendChild(cell);
   }
