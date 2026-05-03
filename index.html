@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>우리의 날들 💕</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --pink: #FF6B8A;
+      --pink-light: #FFE4EC;
+      --bg: #FFF5F7;
+      --white: #FFFFFF;
+      --text: #2D2D2D;
+      --gray: #9AA0A6;
+      --D-bg: #FFE082; --D-text: #E65100;
+      --N-bg: #9FA8DA; --N-text: #1A237E;
+      --E-bg: #CE93D8; --E-text: #4A148C;
+      --OFF-bg: #FFE4EC; --OFF-text: #C62828;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    .header {
+      background: var(--pink);
+      color: white;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: 0 2px 8px rgba(255,107,138,0.3);
+    }
+    .header h1 { font-size: 17px; font-weight: 700; }
+    .header-btn {
+      background: rgba(255,255,255,0.25);
+      border: none;
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    /* ── D-Day banner ───────────────────────────────── */
+    .dday-banner {
+      background: var(--white);
+      border-bottom: 1px solid #f5d0da;
+      padding: 10px 16px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--pink);
+    }
+
+    /* ── Month nav ──────────────────────────────────── */
+    .month-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px 6px;
+    }
+    .nav-btn {
+      width: 36px; height: 36px;
+      background: var(--white);
+      border: 1.5px solid #EEC0CC;
+      border-radius: 50%;
+      color: var(--pink);
+      font-size: 20px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      line-height: 1;
+    }
+    .month-title { font-size: 19px; font-weight: 700; }
+
+    /* ── Legend ─────────────────────────────────────── */
+    .legend {
+      display: flex;
+      gap: 10px;
+      padding: 2px 16px 10px;
+      flex-wrap: wrap;
+    }
+    .legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--gray); }
+    .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+    /* ── Calendar ───────────────────────────────────── */
+    .cal-wrap { padding: 0 10px; }
+    .weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-size: 11px;
+      color: var(--gray);
+      margin-bottom: 5px;
+      padding: 0 1px;
+    }
+    .weekdays .sun { color: var(--pink); }
+    .weekdays .sat { color: #5C6BC0; }
+
+    .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+
+    .day {
+      aspect-ratio: 1;
+      background: var(--white);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid transparent;
+      cursor: default;
+      user-select: none;
+    }
+    .day.empty { background: transparent; border: none; }
+    .day.today { border-color: var(--pink); box-shadow: 0 0 0 1px var(--pink); }
+    .day.off-day { background: var(--OFF-bg); }
+    .day.sun .day-n { color: var(--pink); }
+    .day.sat .day-n { color: #5C6BC0; }
+
+    .day-n { font-size: 13px; font-weight: 500; line-height: 1.1; }
+    .day-badge {
+      font-size: 8.5px;
+      font-weight: 700;
+      padding: 1.5px 4px;
+      border-radius: 3px;
+      margin-top: 2px;
+      line-height: 1.2;
+    }
+    .badge-D   { background: var(--D-bg);   color: var(--D-text); }
+    .badge-N   { background: var(--N-bg);   color: var(--N-text); }
+    .badge-E   { background: var(--E-bg);   color: var(--E-text); }
+    .badge-OFF { background: var(--OFF-bg); color: var(--OFF-text); border: 1px solid #ffb8c8; }
+
+    /* ── Together summary ───────────────────────────── */
+    .together {
+      margin: 12px 10px 0;
+      background: var(--white);
+      border-radius: 14px;
+      padding: 14px;
+      border-left: 4px solid var(--pink);
+    }
+    .together-title { font-size: 13px; font-weight: 700; color: var(--pink); margin-bottom: 8px; }
+    .together-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+    .chip {
+      background: var(--pink-light);
+      color: var(--pink);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid #ffb8c8;
+    }
+
+    /* ── Empty state ────────────────────────────────── */
+    .empty-state { text-align: center; padding: 52px 24px 24px; }
+    .empty-icon { font-size: 52px; margin-bottom: 14px; }
+    .empty-text { font-size: 15px; color: var(--gray); line-height: 1.7; margin-bottom: 20px; }
+    .empty-btn {
+      background: var(--pink);
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 24px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .bottom-pad { height: 36px; }
+
+    /* ── Modal base ─────────────────────────────────── */
+    .modal-bg {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 50;
+      align-items: flex-end;
+    }
+    .modal-bg.open { display: flex; }
+    .modal {
+      background: var(--white);
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-height: 92dvh;
+      overflow-y: auto;
+      padding: 8px 16px 32px;
+    }
+    .modal-handle {
+      width: 40px; height: 4px;
+      background: #DDD;
+      border-radius: 4px;
+      margin: 12px auto 16px;
+    }
+    .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 16px; }
+    .modal-close {
+      width: 100%;
+      padding: 13px;
+      background: #F2F2F2;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      margin-top: 10px;
+    }
+
+    /* ── Import options ─────────────────────────────── */
+    .import-option {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: border-color 0.15s;
+    }
+    .import-option:active { border-color: var(--pink); }
+    .import-option-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+    .import-option-desc { font-size: 12px; color: var(--gray); }
+
+    .url-input-wrap { margin-top: 4px; padding: 12px; background: var(--bg); border-radius: 12px; }
+    .url-input {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1.5px solid #EEC0CC;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      margin-bottom: 8px;
+      outline: none;
+      background: var(--white);
+    }
+    .url-input:focus { border-color: var(--pink); }
+    .url-fetch-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--pink);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .url-fetch-btn:disabled { opacity: 0.6; }
+
+    .divider { height: 1px; background: #F0E0E4; margin: 10px 0; }
+
+    /* ── Bookmarklet steps ──────────────────────────── */
+    .bm-section { padding: 12px; background: var(--bg); border-radius: 12px; margin-top: 8px; }
+    .bm-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+    .step { display: flex; gap: 10px; margin-bottom: 10px; }
+    .step-num {
+      width: 22px; height: 22px;
+      background: var(--pink);
+      color: white;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-text { font-size: 13px; line-height: 1.6; }
+    .bm-link {
+      display: inline-block;
+      background: var(--pink);
+      color: white;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      margin: 6px 0 2px;
+    }
+
+    /* ── Manual entry ───────────────────────────────── */
+    .manual-month-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .manual-month-label { font-size: 16px; font-weight: 700; }
+    .manual-nav-btn {
+      width: 32px; height: 32px;
+      background: none;
+      border: 1.5px solid #EEC0CC;
+      color: var(--pink);
+      border-radius: 50%;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .manual-hint { font-size: 11px; color: var(--gray); text-align: center; margin-bottom: 8px; }
+    .manual-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-size: 11px;
+      color: var(--gray);
+      margin-bottom: 5px;
+    }
+    .manual-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+    .manual-day {
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      cursor: pointer;
+      background: var(--bg);
+      border: 1.5px solid transparent;
+      user-select: none;
+    }
+    .manual-day.sel-D   { background: var(--D-bg);   border-color: #FFA000; }
+    .manual-day.sel-N   { background: var(--N-bg);   border-color: #3949AB; }
+    .manual-day.sel-E   { background: var(--E-bg);   border-color: #8E24AA; }
+    .manual-day.sel-OFF { background: var(--OFF-bg); border-color: var(--pink); }
+    .manual-day-n    { font-size: 12px; font-weight: 600; }
+    .manual-day-code { font-size: 8px;  font-weight: 700; margin-top: 1px; }
+    .manual-save-btn {
+      width: 100%;
+      padding: 13px;
+      background: var(--pink);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      margin-top: 10px;
+    }
+
+    /* ── Toast ──────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(40,40,40,0.92);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 200;
+      opacity: 0;
+      transition: opacity 0.25s;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>우리의 날들 💕</h1>
+  <button class="header-btn" onclick="openImport()">일정 가져오기</button>
+</div>
+
+<div id="dday-banner" class="dday-banner" style="display:none"></div>
+
+<div class="month-nav">
+  <button class="nav-btn" onclick="changeMonth(-1)">‹</button>
+  <span class="month-title" id="month-title"></span>
+  <button class="nav-btn" onclick="changeMonth(1)">›</button>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--D-bg)"></div>D 주간</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--N-bg)"></div>N 야간</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--E-bg)"></div>E 이브닝</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--OFF-bg);border:1px solid #ffb8c8"></div>OFF 쉬는날</div>
+</div>
+
+<div id="cal-root"></div>
+<div class="bottom-pad"></div>
+
+<!-- ── Import Modal ───────────────────────────────────── -->
+<div class="modal-bg" id="import-modal" onclick="if(event.target===this)closeImport()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">일정 가져오기</div>
+
+    <!-- URL 붙여넣기 -->
+    <div class="import-option" onclick="toggleUrlInput()">
+      <div class="import-option-title">🔗 마이듀티 URL로 가져오기</div>
+      <div class="import-option-desc">공유 링크를 붙여넣으면 자동으로 불러와요</div>
+    </div>
+    <div id="url-input-section" class="url-input-wrap" style="display:none">
+      <input class="url-input" id="url-input" type="url" placeholder="https://myduty.io/s/…">
+      <button class="url-fetch-btn" id="fetch-btn" onclick="fetchFromUrl()">가져오기</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 수동 입력 -->
+    <div class="import-option" onclick="openManual()">
+      <div class="import-option-title">✏️ 직접 입력하기</div>
+      <div class="import-option-desc">날짜를 탭해서 D / N / E / OFF 를 직접 설정해요</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 북마크릿 (PC) -->
+    <div class="bm-section">
+      <div class="bm-title">💻 PC에서 북마크릿으로 가져오기</div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">아래 버튼을 브라우저 북마크 바로 <strong>드래그</strong>해서 저장해요<br>
+          <a class="bm-link" id="bm-link" href="#">📅 듀티 가져오기</a>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">마이듀티 공유 링크(myduty.io/s/…)를 열고 저장한 북마크를 클릭해요</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">자동으로 이 페이지로 돌아오면서 일정이 저장돼요 🎉</div>
+      </div>
+    </div>
+
+    <button class="modal-close" onclick="closeImport()">닫기</button>
+  </div>
+</div>
+
+<!-- ── Manual Entry Modal ─────────────────────────────── -->
+<div class="modal-bg" id="manual-modal" onclick="if(event.target===this)closeManual()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="manual-month-nav">
+      <button class="manual-nav-btn" onclick="manualChangeMonth(-1)">‹</button>
+      <span class="manual-month-label" id="manual-month-label"></span>
+      <button class="manual-nav-btn" onclick="manualChangeMonth(1)">›</button>
+    </div>
+    <div class="manual-hint">날짜를 탭할 때마다 → D → N → E → OFF → 비움 순서로 바뀌어요</div>
+    <div class="manual-weekdays">
+      <span style="color:var(--pink)">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span style="color:#5C6BC0">토</span>
+    </div>
+    <div class="manual-grid" id="manual-grid"></div>
+    <button class="manual-save-btn" onclick="saveManual()">저장하기 💾</button>
+    <button class="modal-close" onclick="closeManual()">취소</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+// ── Storage ───────────────────────────────────────────────────────────────
+const SK = 'duty-cal-v1';
+function loadAll() { try { return JSON.parse(localStorage.getItem(SK) || '{}'); } catch { return {}; } }
+function saveAll(d) { localStorage.setItem(SK, JSON.stringify(d)); }
+function loadMonth(y, m) { return loadAll()[key(y, m)] || null; }
+function saveMonth(y, m, s) { const a = loadAll(); a[key(y, m)] = s; saveAll(a); }
+function key(y, m) { return `${y}-${String(m).padStart(2, '0')}`; }
+
+// ── State ─────────────────────────────────────────────────────────────────
+const now = new Date();
+let cy = now.getFullYear(), cm = now.getMonth() + 1;
+
+// ── Render ────────────────────────────────────────────────────────────────
+function render() {
+  document.getElementById('month-title').textContent = `${cy}년 ${cm}월`;
+  const sched = loadMonth(cy, cm);
+  const root = document.getElementById('cal-root');
+  root.innerHTML = '';
+
+  if (!sched) {
+    root.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🗓️</div>
+        <div class="empty-text">${cy}년 ${cm}월 일정이 없어요<br>마이듀티에서 가져오거나 직접 입력해보세요</div>
+        <button class="empty-btn" onclick="openImport()">일정 가져오기</button>
+      </div>`;
+    updateDday(null);
+    return;
+  }
+
+  const calWrap = document.createElement('div');
+  calWrap.className = 'cal-wrap';
+
+  const wdEl = document.createElement('div');
+  wdEl.className = 'weekdays';
+  [['일','sun'],['월',''],['화',''],['수',''],['목',''],['금',''],['토','sat']].forEach(([d, cls]) => {
+    const s = document.createElement('span');
+    s.textContent = d;
+    if (cls) s.className = cls;
+    wdEl.appendChild(s);
+  });
+  calWrap.appendChild(wdEl);
+
+  const daysEl = document.createElement('div');
+  daysEl.className = 'days';
+
+  const fd = new Date(cy, cm - 1, 1).getDay();
+  const dim = new Date(cy, cm, 0).getDate();
+  const todayD = (now.getFullYear() === cy && now.getMonth() + 1 === cm) ? now.getDate() : -1;
+
+  for (let i = 0; i < fd; i++) {
+    const e = document.createElement('div'); e.className = 'day empty'; daysEl.appendChild(e);
+  }
+
+  const offDays = [];
+  for (let d = 1; d <= dim; d++) {
+    const code = (sched[d - 1] || '').toUpperCase().trim();
+    const dow = (fd + d - 1) % 7;
+    const isOff = code === 'OFF';
+    if (isOff) offDays.push(d);
+
+    const cell = document.createElement('div');
+    cell.className = 'day' +
+      (isOff ? ' off-day' : '') +
+      (d === todayD ? ' today' : '') +
+      (dow === 0 ? ' sun' : '') +
+      (dow === 6 ? ' sat' : '');
+    cell.innerHTML = `<span class="day-n">${d}</span>${code ? `<span class="day-badge badge-${code}">${code}</span>` : ''}`;
+    daysEl.appendChild(cell);
+  }
+
+  calWrap.appendChild(daysEl);
+  root.appendChild(calWrap);
+
+  if (offDays.length > 0) {
+    const tog = document.createElement('div');
+    tog.className = 'together';
+    tog.innerHTML = `<div class="together-title">🌴 쉬는 날 · ${offDays.length}일</div>
+      <div class="together-chips">${offDays.map(d => `<span class="chip">${d}일</span>`).join('')}</div>`;
+    root.appendChild(tog);
+  }
+
+  updateDday(offDays);
+}
+
+function updateDday(offDays) {
+  const banner = document.getElementById('dday-banner');
+  if (!offDays || offDays.length === 0) { banner.style.display = 'none'; return; }
+  if (cy !== now.getFullYear() || cm !== now.getMonth() + 1) { banner.style.display = 'none'; return; }
+  const next = offDays.find(d => d >= now.getDate());
+  if (!next) { banner.style.display = 'none'; return; }
+  const diff = next - now.getDate();
+  banner.textContent = diff === 0 ? '🎉 오늘 쉬는 날이에요!' : `💕 다음 쉬는 날까지 D-${diff}`;
+  banner.style.display = 'block';
+}
+
+function changeMonth(d) {
+  cm += d;
+  if (cm > 12) { cm = 1; cy++; }
+  if (cm < 1)  { cm = 12; cy--; }
+  render();
+}
+
+// ── Hash import (bookmarklet callback) ────────────────────────────────────
+function checkHash() {
+  const h = location.hash;
+  if (!h.startsWith('#import=')) return;
+  try {
+    const data = JSON.parse(decodeURIComponent(h.slice(8)));
+    if (data.year && data.month && Array.isArray(data.schedule)) {
+      const y = parseInt(data.year), m = parseInt(data.month);
+      saveMonth(y, m, data.schedule);
+      history.replaceState(null, '', location.pathname);
+      cy = y; cm = m;
+      render();
+      toast(`${y}년 ${m}월 일정을 저장했어요 💕`);
+    }
+  } catch(e) { console.error(e); }
+}
+
+// ── URL import ────────────────────────────────────────────────────────────
+function toggleUrlInput() {
+  const el = document.getElementById('url-input-section');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  if (el.style.display === 'block') setTimeout(() => document.getElementById('url-input').focus(), 100);
+}
+
+async function fetchFromUrl() {
+  const url = document.getElementById('url-input').value.trim();
+  const match = url.match(/myduty\.io\/s\/(\d+)/);
+  if (!match) { toast('마이듀티 공유 URL을 입력해주세요'); return; }
+  const shareId = match[1];
+
+  const btn = document.getElementById('fetch-btn');
+  btn.disabled = true;
+  btn.textContent = '불러오는 중…';
+
+  const months = [
+    [now.getFullYear(), now.getMonth() + 1],
+    now.getMonth() === 11
+      ? [now.getFullYear() + 1, 1]
+      : [now.getFullYear(), now.getMonth() + 2]
+  ];
+
+  const bodies = [
+    { shareId },
+    { id: shareId },
+    { share_id: shareId },
+    { sid: shareId },
+    { shareCode: shareId }
+  ];
+
+  for (const [year, month] of months) {
+    for (const variant of bodies) {
+      const body = JSON.stringify({ ...variant, year, month });
+      // Direct call
+      try {
+        const res = await fetch('https://myduty.io/proxy/getGroupDutySchedules', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body
+        });
+        if (res.ok) {
+          const parsed = tryParse(await res.text(), year, month);
+          if (parsed) return applyImport(year, month, parsed);
+        }
+      } catch(_) {}
+
+      // CORS proxy fallback
+      try {
+        const proxy = 'https://corsproxy.io/?' + encodeURIComponent('https://myduty.io/proxy/getGroupDutySchedules');
+        const res = await fetch(proxy, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-requested-with': 'XMLHttpRequest' },
+          body
+        });
+        if (res.ok) {
+          const parsed = tryParse(await res.text(), year, month);
+          if (parsed) return applyImport(year, month, parsed);
+        }
+      } catch(_) {}
+    }
+  }
+
+  btn.disabled = false;
+  btn.textContent = '가져오기';
+  toast('자동 가져오기 실패 — 직접 입력을 이용해주세요');
+}
+
+function tryParse(text, year, month) {
+  if (!text || text.length < 5) return null;
+  try {
+    const data = JSON.parse(text);
+    const dim = new Date(year, month, 0).getDate();
+    const arrs = findArrays(data);
+    for (const arr of arrs) {
+      const codes = arr.map(item =>
+        typeof item === 'string' ? item : (item?.shift || item?.type || item?.code || item?.duty || '')
+      ).filter(Boolean);
+      if (codes.length >= Math.floor(dim * 0.5)) return codes.slice(0, dim);
+    }
+  } catch(_) {}
+  return null;
+}
+
+function findArrays(obj, depth = 0) {
+  if (depth > 6) return [];
+  const out = [];
+  if (Array.isArray(obj) && obj.length > 5) out.push(obj);
+  if (obj && typeof obj === 'object' && !Array.isArray(obj))
+    Object.values(obj).forEach(v => out.push(...findArrays(v, depth + 1)));
+  return out;
+}
+
+function applyImport(year, month, sched) {
+  saveMonth(year, month, sched);
+  cy = year; cm = month;
+  closeImport();
+  render();
+  toast(`${year}년 ${month}월 일정을 저장했어요 💕`);
+  document.getElementById('fetch-btn').disabled = false;
+  document.getElementById('fetch-btn').textContent = '가져오기';
+}
+
+// ── Bookmarklet builder ───────────────────────────────────────────────────
+function buildBookmarklet() {
+  const appUrl = (location.origin + location.pathname).replace(/\/+$/, '');
+  const js = `(function(){`
+    + `var y=[...document.querySelectorAll('span,div,p')].find(function(e){return e.children.length===0&&/\\d{4}년/.test(e.textContent);});`
+    + `if(!y){alert('연월을 찾을 수 없어요. 마이듀티 공유 페이지인지 확인해주세요.');return;}`
+    + `var m=y.textContent.match(/(\\d{4})년\\s*(\\d+)월/);`
+    + `if(!m){alert('날짜 파싱 실패');return;}`
+    + `var b=[...document.querySelectorAll('.shift-badge')].map(function(e){return e.textContent.trim();});`
+    + `if(!b.length){alert('근무 데이터를 찾을 수 없어요.');return;}`
+    + `location.href='${appUrl}/#import='+encodeURIComponent(JSON.stringify({year:m[1],month:m[2],schedule:b}));`
+    + `})();`;
+  document.getElementById('bm-link').href = 'javascript:' + js;
+}
+
+// ── Import modal ──────────────────────────────────────────────────────────
+function openImport() {
+  buildBookmarklet();
+  document.getElementById('url-input-section').style.display = 'none';
+  document.getElementById('url-input').value = '';
+  document.getElementById('import-modal').classList.add('open');
+}
+function closeImport() { document.getElementById('import-modal').classList.remove('open'); }
+
+// ── Manual entry ──────────────────────────────────────────────────────────
+const CYCLE = ['', 'D', 'N', 'E', 'OFF'];
+let mY, mM, mData = {};
+
+function openManual() {
+  mY = cy; mM = cm;
+  const ex = loadMonth(cy, cm);
+  mData = {};
+  if (ex) ex.forEach((c, i) => { if (c) mData[i + 1] = c; });
+  renderManualGrid();
+  document.getElementById('import-modal').classList.remove('open');
+  document.getElementById('manual-modal').classList.add('open');
+}
+function closeManual() { document.getElementById('manual-modal').classList.remove('open'); }
+
+function manualChangeMonth(d) {
+  mM += d;
+  if (mM > 12) { mM = 1; mY++; }
+  if (mM < 1)  { mM = 12; mY--; }
+  const ex = loadMonth(mY, mM);
+  mData = {};
+  if (ex) ex.forEach((c, i) => { if (c) mData[i + 1] = c; });
+  renderManualGrid();
+}
+
+function renderManualGrid() {
+  document.getElementById('manual-month-label').textContent = `${mY}년 ${mM}월`;
+  const grid = document.getElementById('manual-grid');
+  grid.innerHTML = '';
+
+  const fd = new Date(mY, mM - 1, 1).getDay();
+  const dim = new Date(mY, mM, 0).getDate();
+
+  for (let i = 0; i < fd; i++) {
+    const e = document.createElement('div');
+    e.style.aspectRatio = '1';
+    grid.appendChild(e);
+  }
+
+  for (let d = 1; d <= dim; d++) {
+    const code = mData[d] || '';
+    const cell = document.createElement('div');
+    cell.className = 'manual-day' + (code ? ` sel-${code}` : '');
+    cell.innerHTML = `<span class="manual-day-n">${d}</span><span class="manual-day-code">${code}</span>`;
+    cell.onclick = () => cycleCode(d, cell);
+    grid.appendChild(cell);
+  }
+}
+
+function cycleCode(d, cell) {
+  const cur = mData[d] || '';
+  const next = CYCLE[(CYCLE.indexOf(cur) + 1) % CYCLE.length];
+  if (next) mData[d] = next; else delete mData[d];
+  cell.className = 'manual-day' + (next ? ` sel-${next}` : '');
+  cell.querySelector('.manual-day-code').textContent = next;
+}
+
+function saveManual() {
+  const dim = new Date(mY, mM, 0).getDate();
+  const sched = [];
+  for (let d = 1; d <= dim; d++) sched.push(mData[d] || '');
+  saveMonth(mY, mM, sched);
+  cy = mY; cm = mM;
+  closeManual();
+  render();
+  toast(`${mY}년 ${mM}월 일정을 저장했어요 💕`);
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg, dur = 2800) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), dur);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+checkHash();
+render();
+</script>
+</body>
+</html>
